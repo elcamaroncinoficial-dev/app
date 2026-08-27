@@ -5,13 +5,13 @@
 // al revés. Así evitamos el problema clásico de PWAs que se quedan "atoradas"
 // mostrando una versión vieja aunque el dueño ya subió cambios a Netlify.
 
-const CACHE_NAME = 'camaroncin-v1';
+const CACHE_NAME = 'camaroncin-v2';
 const ARCHIVOS_BASICOS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/icon-192-v2.png',
+  '/icon-512-v2.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -79,8 +79,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(datos.title, {
       body: datos.body,
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      icon: '/icon-192-v2.png',
+      badge: '/icon-192-v2.png',
       data: { url: datos.url || '/admin.html' },
       vibrate: [200, 100, 200],
     })
