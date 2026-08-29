@@ -53,6 +53,7 @@
  <span data-icon="store"><svg viewBox="0 0 24 24" fill="none"><path d="M4 9l1-5h14l1 5M4 9a2 2 0 004 0 2 2 0 004 0 2 2 0 004 0 2 2 0 004 0M5 9v10h14V9" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
  <span data-icon="plus"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
  <span data-icon="bell"><svg viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+ <span data-icon="chat"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5.5h16v11H8l-4 3.5v-3.5H4v-11z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
  <span data-icon="trash"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4.5A1.5 1.5 0 0110.5 3h3A1.5 1.5 0 0115 4.5V7M18 7l-.7 12.5A2 2 0 0115.3 21H8.7a2 2 0 01-2-1.9L6 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
 </template>
 
@@ -88,6 +89,7 @@
    <button data-tab="metricas" data-icon-nav="chart" class="tabBtn bg-white border border-line px-3.5 py-2 rounded-xl text-[13px] font-display font-600 shrink-0 flex items-center gap-1.5"><span class="w-[14px] h-[14px]"></span>Métricas</button>
    <button data-tab="menu" data-icon-nav="menu" class="tabBtn bg-white border border-line px-3.5 py-2 rounded-xl text-[13px] font-display font-600 shrink-0 flex items-center gap-1.5"><span class="w-[14px] h-[14px]"></span>Menú</button>
    <button data-tab="costos" data-icon-nav="coins" class="tabBtn bg-white border border-line px-3.5 py-2 rounded-xl text-[13px] font-display font-600 shrink-0 flex items-center gap-1.5"><span class="w-[14px] h-[14px]"></span>Costos</button>
+   <button data-tab="opiniones" data-icon-nav="chat" class="tabBtn bg-white border border-line px-3.5 py-2 rounded-xl text-[13px] font-display font-600 shrink-0 flex items-center gap-1.5"><span class="w-[14px] h-[14px]"></span>Opiniones</button>
    <button data-tab="ayuda" class="tabBtn bg-white border border-line px-3.5 py-2 rounded-xl text-[13px] font-display font-600 shrink-0 flex items-center gap-1.5">❓ Ayuda</button>
   </nav>
  </header>
@@ -295,6 +297,31 @@
       Precio sugerido: <span id="calcResultado" class="font-display font-700 ">$0.00</span>
      </div>
     </div>
+   </div>
+  </section>
+
+  <!-- ============ OPINIONES DE CLIENTES ============ -->
+  <section id="tabOpiniones" class="hidden">
+   <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+    <div>
+     <h2 class="font-display font-600 text-[16px]">Opiniones de clientes</h2>
+     <p class="text-[12px] text-muted">Canal privado — no se publican dentro de la app.</p>
+    </div>
+    <div class="flex gap-1.5 flex-wrap">
+     <button data-opfiltro="" class="opFiltroBtn bg-ink text-white px-3 py-1.5 rounded-full text-[12.5px] font-medium">Todas</button>
+     <button data-opfiltro="no-leidas" class="opFiltroBtn bg-white border border-line px-3 py-1.5 rounded-full text-[12.5px] font-medium">No leídas</button>
+    </div>
+   </div>
+
+   <div id="opTendenciasBox" class="bg-white border border-line rounded-2xl p-4 mb-4 hidden">
+    <p class="font-display font-600 text-[13px] text-ink mb-2">Palabras más repetidas (últimas 90)</p>
+    <div id="opTendenciasChips" class="flex flex-wrap gap-1.5"></div>
+   </div>
+
+   <div id="opinionesList" class="space-y-2.5"></div>
+   <div id="opinionesVacio" class="hidden text-center py-16">
+    <p class="text-[36px] mb-2">💬</p>
+    <p class="font-display font-600 text-[14px] text-ink">Aún no hay opiniones</p>
    </div>
   </section>
 
@@ -5019,10 +5046,12 @@ document.querySelectorAll('.tabBtn').forEach(btn => {
   document.getElementById('tabMetricas').classList.toggle('hidden', tab !== 'metricas');
   document.getElementById('tabMenu').classList.toggle('hidden', tab !== 'menu');
   document.getElementById('tabCostos').classList.toggle('hidden', tab !== 'costos');
+  document.getElementById('tabOpiniones').classList.toggle('hidden', tab !== 'opiniones');
   document.getElementById('tabAyuda').classList.toggle('hidden', tab !== 'ayuda');
   if (tab === 'metricas') { const activo = document.querySelector('.periodBtn.bg-ink')?.dataset.periodo || 'hoy'; cargarMetricas(activo); cargarChart7d(); }
   if (tab === 'menu') cargarMenuAdmin();
   if (tab === 'costos') cargarCostos('hoy');
+  if (tab === 'opiniones') cargarOpiniones();
  });
 });
 
@@ -5663,6 +5692,79 @@ function calcularPrecioSugerido() {
 }
 document.getElementById('calcCosto').addEventListener('input', calcularPrecioSugerido);
 document.getElementById('calcMargen').addEventListener('input', calcularPrecioSugerido);
+
+// ---------- OPINIONES DE CLIENTES ----------
+let opinionesFiltroActual = '';
+let opinionesCache = [];
+
+function escaparHtmlOpinion(str) {
+ return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+document.querySelectorAll('.opFiltroBtn').forEach(btn => {
+ btn.addEventListener('click', () => {
+  activarPill(btn, '.opFiltroBtn');
+  opinionesFiltroActual = btn.dataset.opfiltro;
+  renderOpiniones();
+ });
+});
+
+async function cargarOpiniones() {
+ if (DEMO_MODE) {
+  document.getElementById('opinionesList').innerHTML = '';
+  document.getElementById('opinionesVacio').classList.remove('hidden');
+  return;
+ }
+ const { data, error } = await supabase.from('opiniones').select('*').order('fecha', { ascending: false }).limit(200);
+ if (error) { alert('No se pudieron cargar las opiniones: ' + error.message); return; }
+ opinionesCache = data || [];
+ renderTendenciasOpiniones();
+ renderOpiniones();
+}
+
+function renderOpiniones() {
+ const list = opinionesFiltroActual === 'no-leidas' ? opinionesCache.filter(o => !o.leida) : opinionesCache;
+ const box = document.getElementById('opinionesList');
+ document.getElementById('opinionesVacio').classList.toggle('hidden', list.length > 0);
+ box.innerHTML = list.map(o => `
+  <div class="bg-white border border-line rounded-2xl p-4 ${o.leida ? '' : 'border-l-4 border-l-accent'}">
+   <div class="flex items-center justify-between mb-1.5">
+    <span class="text-[12px] text-muted">${new Date(o.fecha).toLocaleString('es-MX')}</span>
+    ${!o.leida ? `<button class="opMarcarLeidaBtn text-[11.5px] font-display font-600 text-forest" data-id="${o.id}">Marcar como leída</button>` : `<span class="text-[11px] text-muted">Leída</span>`}
+   </div>
+   <p class="text-[13.5px] text-ink leading-snug mb-1.5">${escaparHtmlOpinion(o.comentario)}</p>
+   <p class="text-[11.5px] text-muted">${o.apodo ? escaparHtmlOpinion(o.apodo) : 'Anónimo'}${o.telefono ? ' · ' + o.telefono : ''}</p>
+  </div>
+ `).join('');
+ box.querySelectorAll('.opMarcarLeidaBtn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+   const { error } = await supabase.from('opiniones').update({ leida: true }).eq('id', btn.dataset.id);
+   if (error) { alert('No se pudo marcar como leída: ' + error.message); return; }
+   const o = opinionesCache.find(x => x.id === btn.dataset.id);
+   if (o) o.leida = true;
+   renderOpiniones();
+  });
+ });
+}
+
+const OPINIONES_STOPWORDS = new Set(['que','de','la','el','los','las','un','una','unos','unas','y','o','en','a','al','del','se','muy','pero','con','por','para','es','fue','son','como','me','mi','su','sus','lo','le','les','no','si','sí','más','menos','todo','toda','todos','todas','este','esta','esos','esas','eso','esa','ese','tan','ya','also','the']);
+function renderTendenciasOpiniones() {
+ const recientes = opinionesCache.slice(0, 90);
+ const conteo = {};
+ recientes.forEach(o => {
+  (o.comentario.toLowerCase().match(/[a-záéíóúñ]{4,}/g) || []).forEach(palabra => {
+   if (OPINIONES_STOPWORDS.has(palabra)) return;
+   conteo[palabra] = (conteo[palabra] || 0) + 1;
+  });
+ });
+ const top = Object.entries(conteo).filter(([,n]) => n >= 2).sort((a,b) => b[1]-a[1]).slice(0, 12);
+ const box = document.getElementById('opTendenciasBox');
+ if (!top.length) { box.classList.add('hidden'); return; }
+ box.classList.remove('hidden');
+ document.getElementById('opTendenciasChips').innerHTML = top.map(([palabra, n]) => `
+  <span class="bg-cream text-forestDark text-[12px] font-display font-600 px-3 py-1.5 rounded-full">${palabra} · ${n}</span>
+ `).join('');
+}
 
 // ============================================================
 // NOTIFICACIONES PUSH — avisan de pedidos nuevos aunque el panel
