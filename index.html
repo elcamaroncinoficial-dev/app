@@ -2212,7 +2212,11 @@ function renderCart() {
         <div id="datosBancariosBox" class="hidden mt-3 bg-cream border border-line rounded-xl p-3.5">
           <p class="font-display font-600 text-[12.5px] text-ink mb-2">Datos para tu transferencia</p>
           <div class="text-[13px] text-ink space-y-1">
-            <p><span class="text-muted">CLABE:</span> <span class="font-display font-600">722969020303755309</span></p>
+            <p class="flex items-center gap-2">
+              <span class="text-muted">CLABE:</span>
+              <span id="clabeTexto" class="font-display font-600">722969020303755309</span>
+              <button type="button" id="copiarClabeBtn" class="text-[11px] font-display font-600 text-forest bg-white border border-line rounded-full px-2.5 py-1 ml-auto shrink-0">Copiar</button>
+            </p>
             <p><span class="text-muted">Beneficiario:</span> Federico Aleman Ortiz</p>
             <p><span class="text-muted">Institución:</span> Mercado Pago W</p>
           </div>
@@ -3072,6 +3076,29 @@ document.addEventListener('change', (e) => {
     const box = document.getElementById('datosBancariosBox');
     if (box) box.classList.toggle('hidden', e.target.value !== 'transferencia');
   }
+});
+
+// Copiar solo el número de CLABE (nada más) al portapapeles
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('#copiarClabeBtn');
+  if (!btn) return;
+  const clabe = document.getElementById('clabeTexto').textContent.trim();
+  try {
+    await navigator.clipboard.writeText(clabe);
+  } catch (err) {
+    // Respaldo por si el navegador bloquea el portapapeles (ej. sin HTTPS o permisos)
+    const temp = document.createElement('textarea');
+    temp.value = clabe;
+    temp.style.position = 'fixed';
+    temp.style.opacity = '0';
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
+  }
+  const textoOriginal = btn.textContent;
+  btn.textContent = '¡Copiada!';
+  setTimeout(() => { btn.textContent = textoOriginal; }, 1500);
 });
 </script>
 <!-- ============ MODAL DE BIENVENIDA (solo primera vez, apodo + teléfono) ============ -->
