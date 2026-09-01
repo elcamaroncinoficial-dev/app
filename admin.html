@@ -334,25 +334,69 @@
     <p class="text-[13px] text-muted mb-4">El recorrido completo, de principio a fin, tal como lo vive tu cliente en el celular.</p>
 
     <div class="flex flex-col gap-2">
-     ${[
-       ['1', 'Abre la app', 'Ve una pantalla de carga breve y luego el menú, con la promoción del día si tienes una activa.'],
-       ['2', 'Se le reconoce (si ya la usó)', 'Si es su primera vez, le pedimos apodo + teléfono desde el ícono de menú (☰) → Mi Perfil, sin contraseña. Si ya la usó, lo saluda por su nombre.'],
-       ['3', 'Explora categorías', 'Entradas, Tacos y empanadas, Sopas, Barra fría, Platos fuertes, Especialidades, De la tierra, Pequeños navegantes, Extra, Bebidas y Postre. El menú (☰) también deja ver el directorio completo y saltar directo a un platillo.'],
-       ['4', 'Elige un platillo', 'Se abre un modal que le pide, en orden: cantidad (si aplica) → lo obligatorio (proteína, tamaño) → lo opcional gratis (cómo lo quiere preparado) → lo opcional con costo (extras).'],
-       ['5', 'Agrega al carrito', 'Puede seguir agregando más platillos, ver sus favoritos frecuentes o repetir un pedido anterior desde "Mis Pedidos".'],
-       ['6', 'Revisa su pedido', 'Ve el carrito completo, puede ajustar cantidades, agregar propina, marcarlo como regalo para alguien más.'],
-       ['7', 'Confirma y paga', 'Llena nombre, teléfono y dirección de entrega (o usa su ubicación GPS, o una guardada en su libreta). Elige efectivo o transferencia.'],
-       ['8', 'Se abre WhatsApp', 'El pedido completo, ya armado y ordenado, se manda por WhatsApp al número del negocio — listo para confirmar. Este paso siempre funciona, sea cual sea el estado de las notificaciones push.'],
-       ['9', 'Tú lo recibes aquí', 'En la pestaña "Pedidos" de este panel puedes ver, actualizar el estatus y darle seguimiento a cada pedido.'],
-     ].map(([n, titulo, texto]) => `
-       <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
-        <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">${n}</span>
-        <div>
-         <p class="font-display font-600 text-[13.5px] text-ink">${titulo}</p>
-         <p class="text-[12.5px] text-muted mt-0.5">${texto}</p>
-        </div>
-       </div>
-     `).join('')}
+     <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">1</span>
+      <div>
+       <p class="font-display font-600 text-[13.5px] text-ink">Abre la app</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Ve una pantalla de carga breve y luego el menú, con la promoción del día si tienes una activa.</p>
+      </div>
+     </div>
+     <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">2</span>
+      <div>
+       <p class="font-display font-600 text-[13.5px] text-ink">Se le reconoce (si ya la usó)</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Si es su primera vez, le pedimos apodo + teléfono desde el ícono de menú (☰) → Mi Perfil, sin contraseña. Si ya la usó, lo saluda por su nombre.</p>
+      </div>
+     </div>
+     <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">3</span>
+      <div>
+       <p class="font-display font-600 text-[13.5px] text-ink">Explora categorías</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Entradas, Tacos y empanadas, Sopas, Barra fría, Platos fuertes, Especialidades, De la tierra, Pequeños navegantes, Extra, Bebidas y Postre. El menú (☰) también deja ver el directorio completo y saltar directo a un platillo.</p>
+      </div>
+     </div>
+     <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">4</span>
+      <div>
+       <p class="font-display font-600 text-[13.5px] text-ink">Elige un platillo</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Se abre un modal que le pide, en orden: cantidad (si aplica) → lo obligatorio (proteína, tamaño) → lo opcional gratis (cómo lo quiere preparado) → lo opcional con costo (extras).</p>
+      </div>
+     </div>
+     <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">5</span>
+      <div>
+       <p class="font-display font-600 text-[13.5px] text-ink">Agrega al carrito</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Puede seguir agregando más platillos, ver sus favoritos frecuentes o repetir un pedido anterior desde "Mis Pedidos".</p>
+      </div>
+     </div>
+     <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">6</span>
+      <div>
+       <p class="font-display font-600 text-[13.5px] text-ink">Revisa su pedido</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Ve el carrito completo, puede ajustar cantidades, agregar propina, marcarlo como regalo para alguien más.</p>
+      </div>
+     </div>
+     <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">7</span>
+      <div>
+       <p class="font-display font-600 text-[13.5px] text-ink">Confirma y paga</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Llena nombre, teléfono y dirección de entrega (o usa su ubicación GPS, o una guardada en su libreta). Elige efectivo o transferencia.</p>
+      </div>
+     </div>
+     <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">8</span>
+      <div>
+       <p class="font-display font-600 text-[13.5px] text-ink">Se abre WhatsApp</p>
+       <p class="text-[12.5px] text-muted mt-0.5">El pedido completo, ya armado y ordenado, se manda por WhatsApp al número del negocio — listo para confirmar. Este paso siempre funciona, sea cual sea el estado de las notificaciones push.</p>
+      </div>
+     </div>
+     <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">9</span>
+      <div>
+       <p class="font-display font-600 text-[13.5px] text-ink">Tú lo recibes aquí</p>
+       <p class="text-[12.5px] text-muted mt-0.5">En la pestaña "Pedidos" de este panel puedes ver, actualizar el estatus y darle seguimiento a cada pedido.</p>
+      </div>
+     </div>
     </div>
    </div>
 
@@ -360,18 +404,26 @@
    <div>
     <h3 class="font-display font-700 text-[16px] text-ink mb-1">🖥️ Cómo funciona este panel (lo que estás viendo ahora)</h3>
     <div class="grid sm:grid-cols-2 gap-3 mt-3">
-     ${[
-       ['Pedidos', 'Todos los pedidos que van llegando en vivo. Cambia su estatus conforme los vas preparando y entregando.'],
-       ['Métricas', 'Qué se está vendiendo más, cuánto llevas de ingresos y las tendencias de los últimos días.'],
-       ['Menú', 'Abre/cierra la tienda, configura el banner promocional, revisa premios de lealtad pendientes de entregar, y administra cada platillo: agotado del día, destacado, precio, costo, y zonas de entrega con su costo de envío.'],
-       ['Costos', 'Calcula tu margen real por platillo y el punto de equilibrio del negocio, con una calculadora de precio sugerido según el margen que quieras.'],
-       ['Opiniones', 'Buzón privado de comentarios de tus clientes — no se publican en la app. Úsalo para detectar quejas recurrentes o ideas de mejora antes de que se conviertan en un problema.'],
-     ].map(([t, d]) => `
-       <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
-        <p class="font-display font-600 text-[13.5px] text-forest">${t}</p>
-        <p class="text-[12.5px] text-muted mt-0.5">${d}</p>
-       </div>
-     `).join('')}
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-forest">Pedidos</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Todos los pedidos que van llegando en vivo. Cambia su estatus conforme los vas preparando y entregando.</p>
+     </div>
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-forest">Métricas</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Qué se está vendiendo más, cuánto llevas de ingresos y las tendencias de los últimos días.</p>
+     </div>
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-forest">Menú</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Abre/cierra la tienda, configura el banner promocional, revisa premios de lealtad pendientes de entregar, y administra cada platillo: agotado del día, destacado, precio, costo, y zonas de entrega con su costo de envío.</p>
+     </div>
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-forest">Costos</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Calcula tu margen real por platillo y el punto de equilibrio del negocio, con una calculadora de precio sugerido según el margen que quieras.</p>
+     </div>
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-forest">Opiniones</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Buzón privado de comentarios de tus clientes — no se publican en la app. Úsalo para detectar quejas recurrentes o ideas de mejora antes de que se conviertan en un problema.</p>
+     </div>
     </div>
    </div>
 
@@ -395,17 +447,22 @@
    <div>
     <h3 class="font-display font-700 text-[16px] text-ink mb-1">🛠️ Si algo no cuadra</h3>
     <div class="space-y-2 mt-3">
-     ${[
-       ['No me llegó la notificación de un pedido nuevo', 'El canal garantizado es WhatsApp: cada pedido siempre se manda ahí sin importar nada más. Las notificaciones push del navegador son un aviso adicional; revisa periódicamente la pestaña "Pedidos" mientras confirmas que el push esté bien configurado en tu celular.'],
-       ['Un cliente dice que no puede pedir cierto platillo', 'Revisa en la pestaña Menú si quedó marcado como "agotado" (interruptor verde apagado) o "descontinuado" (ver sección de arriba) por accidente.'],
-       ['Cambié el precio de un platillo y no se refleja', 'Verifica que le diste clic fuera del campo de precio para que se guarde el cambio — se guarda automáticamente al perder el foco, no hace falta un botón aparte.'],
-       ['Quiero agregar un platillo nuevo que no existe todavía', 'Hoy el panel solo permite editar platillos existentes. Para dar de alta uno nuevo, pídelo directamente para que se agregue en la base de datos.'],
-     ].map(([t, d]) => `
-       <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
-        <p class="font-display font-600 text-[13.5px] text-ink">${t}</p>
-        <p class="text-[12.5px] text-muted mt-0.5">${d}</p>
-       </div>
-     `).join('')}
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-ink">No me llegó la notificación de un pedido nuevo</p>
+      <p class="text-[12.5px] text-muted mt-0.5">El canal garantizado es WhatsApp: cada pedido siempre se manda ahí sin importar nada más. Las notificaciones push del navegador son un aviso adicional; revisa periódicamente la pestaña "Pedidos" mientras confirmas que el push esté bien configurado en tu celular.</p>
+     </div>
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-ink">Un cliente dice que no puede pedir cierto platillo</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Revisa en la pestaña Menú si quedó marcado como "agotado" (interruptor verde apagado) o "descontinuado" (ver sección de arriba) por accidente.</p>
+     </div>
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-ink">Cambié el precio de un platillo y no se refleja</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Verifica que le diste clic fuera del campo de precio para que se guarde el cambio — se guarda automáticamente al perder el foco, no hace falta un botón aparte.</p>
+     </div>
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-ink">Quiero agregar un platillo nuevo que no existe todavía</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Hoy el panel solo permite editar platillos existentes. Para dar de alta uno nuevo, pídelo directamente para que se agregue en la base de datos.</p>
+     </div>
     </div>
    </div>
 
