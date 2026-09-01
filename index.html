@@ -673,6 +673,8 @@ let checkoutStep = 0; // 0=Tu pedido, 1=Datos de entrega, 2=Pago y confirmación
 // para que el cliente nunca tenga que volver a escribir todo desde cero por error.
 let datosEntrega = { nombre: '', telefono: '', direccion: '', nombreDestinatario: '', telefonoDestinatario: '', mensajeRegalo: '' };
 let irAPasoCheckoutRef = null; // referencia a la función interna de renderCart(), para que el botón "atrás" del celular pueda usarla
+const CARRITO_LOCAL_KEY = 'carritoEnProgreso';
+const CARRITO_LOCAL_MAX_HORAS = 48; // pasado este tiempo, ya no se restaura solo (evita reaparecer un pedido de hace días)
 let perfilUsuario = null; // {apodo, telefono} — se guarda local (y en Supabase cuando hay backend real) la primera vez
 let TIENDA_ABIERTA = true;
 let searchTerm = '';
@@ -720,6 +722,7 @@ async function cargarMenu() {
     mostrarBotonRepetir();
     renderFavoritos();
     document.getElementById('storeStatus').innerHTML = `${PRODUCTOS.length} platillos disponibles · <span class="text-accent font-semibold">modo demo</span>`;
+    restaurarCarritoLocal();
     return;
   }
 
@@ -764,6 +767,7 @@ async function cargarMenu() {
   } else {
     document.getElementById('storeStatus').textContent = `${PRODUCTOS.length} platillos disponibles hoy`;
   }
+  restaurarCarritoLocal();
 }
 
 function mostrarPromoDelDia(config) {
@@ -1970,6 +1974,7 @@ function cerrarProducto() { document.getElementById('productModal').classList.ad
 // CARRITO
 // ============================================================
 function actualizarCartUI() {
+  guardarCarritoLocal();
   const count = cart.reduce((a, i) => a + i.cantidad, 0);
   const total = cart.reduce((a, i) => a + i.subtotal, 0);
 
@@ -2288,6 +2293,7 @@ function renderCart() {
 
   function irAPasoCheckout(n) {
     checkoutStep = n;
+    guardarCarritoLocal();
     const cartBody = document.getElementById('cartBody');
     const accEntrega = document.getElementById('accEntrega');
     const accPago = document.getElementById('accPago');
@@ -2360,6 +2366,7 @@ function renderCart() {
       regaloActivo = chkRegalo.checked;
       document.getElementById('regaloFields').classList.toggle('hidden', !regaloActivo);
       actualizarEtiquetasRegalo(regaloActivo);
+      guardarCarritoLocal();
     });
   }
 
@@ -2388,12 +2395,14 @@ function renderCart() {
         propinaSeleccionada.monto = Number(radio.value);
       }
       recalcularTotales();
+      guardarCarritoLocal();
     });
   });
   if (inpPropinaOtra) {
     inpPropinaOtra.addEventListener('input', () => {
       propinaSeleccionada.monto = Math.max(0, Number(inpPropinaOtra.value) || 0);
       recalcularTotales();
+      guardarCarritoLocal();
     });
   }
 
@@ -2401,6 +2410,7 @@ function renderCart() {
   if (inpNotas) {
     inpNotas.addEventListener('input', () => {
       notasEspeciales = inpNotas.value;
+      guardarCarritoLocal();
     });
   }
 
@@ -2419,12 +2429,12 @@ function renderCart() {
   const inpNombreDestEl = document.getElementById('inpNombreDestinatario');
   const inpTelefonoDestEl = document.getElementById('inpTelefonoDestinatario');
   const inpMensajeRegaloEl = document.getElementById('inpMensajeRegalo');
-  if (inpNombreEl) inpNombreEl.addEventListener('input', () => { datosEntrega.nombre = inpNombreEl.value; });
-  if (inpTelefonoEl) inpTelefonoEl.addEventListener('input', () => { datosEntrega.telefono = inpTelefonoEl.value; });
-  if (inpDireccionEl) inpDireccionEl.addEventListener('input', () => { datosEntrega.direccion = inpDireccionEl.value; });
-  if (inpNombreDestEl) inpNombreDestEl.addEventListener('input', () => { datosEntrega.nombreDestinatario = inpNombreDestEl.value; });
-  if (inpTelefonoDestEl) inpTelefonoDestEl.addEventListener('input', () => { datosEntrega.telefonoDestinatario = inpTelefonoDestEl.value; });
-  if (inpMensajeRegaloEl) inpMensajeRegaloEl.addEventListener('input', () => { datosEntrega.mensajeRegalo = inpMensajeRegaloEl.value; });
+  if (inpNombreEl) inpNombreEl.addEventListener('input', () => { datosEntrega.nombre = inpNombreEl.value; guardarCarritoLocal(); });
+  if (inpTelefonoEl) inpTelefonoEl.addEventListener('input', () => { datosEntrega.telefono = inpTelefonoEl.value; guardarCarritoLocal(); });
+  if (inpDireccionEl) inpDireccionEl.addEventListener('input', () => { datosEntrega.direccion = inpDireccionEl.value; guardarCarritoLocal(); });
+  if (inpNombreDestEl) inpNombreDestEl.addEventListener('input', () => { datosEntrega.nombreDestinatario = inpNombreDestEl.value; guardarCarritoLocal(); });
+  if (inpTelefonoDestEl) inpTelefonoDestEl.addEventListener('input', () => { datosEntrega.telefonoDestinatario = inpTelefonoDestEl.value; guardarCarritoLocal(); });
+  if (inpMensajeRegaloEl) inpMensajeRegaloEl.addEventListener('input', () => { datosEntrega.mensajeRegalo = inpMensajeRegaloEl.value; guardarCarritoLocal(); });
 
   document.getElementById('confirmarPedido').addEventListener('click', confirmarPedido);
   document.getElementById('inpTelefono').addEventListener('blur', buscarClienteRecurrente);
@@ -2501,15 +2511,106 @@ function cerrarMapaUbicacion() {
 
 document.getElementById('mapaUbicacionCerrarBtn').addEventListener('click', cerrarMapaUbicacion);
 document.getElementById('mapaUbicacionOverlay').addEventListener('click', cerrarMapaUbicacion);
-document.getElementById('mapaUbicacionConfirmarBtn').addEventListener('click', () => {
+document.getElementById('mapaUbicacionConfirmarBtn').addEventListener('click', async () => {
   gpsCoords = mapaUbicacionCoordsTemp;
   const link = document.getElementById('gpsVerMapaLink');
   if (link) link.href = `https://www.google.com/maps/search/?api=1&query=${gpsCoords.lat},${gpsCoords.lng}`;
   const status = document.getElementById('gpsStatus');
   if (status) status.classList.remove('hidden');
-  cerrarMapaUbicacion();
-  toast('Ubicación confirmada ✓');
+
+  const btnConfirmar = document.getElementById('mapaUbicacionConfirmarBtn');
+  const textoOriginal = btnConfirmar.textContent;
+  btnConfirmar.textContent = 'Buscando la dirección...';
+  btnConfirmar.disabled = true;
+
+  const inpDireccion = document.getElementById('inpDireccion');
+  try {
+    // Geocodificación inversa gratuita (Nominatim, de OpenStreetMap) — convierte lat/lng en una dirección legible
+    const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${gpsCoords.lat}&lon=${gpsCoords.lng}&accept-language=es`);
+    const data = await resp.json();
+    const direccionEncontrada = data?.display_name;
+    if (direccionEncontrada && inpDireccion) {
+      inpDireccion.value = direccionEncontrada;
+      datosEntrega.direccion = direccionEncontrada;
+      guardarCarritoLocal();
+      toast('Ubicación confirmada — revisa que la dirección esté completa ✓');
+    } else {
+      toast('Ubicación confirmada — escribe tu dirección para completar los detalles.', 'error');
+    }
+  } catch (e) {
+    // Si falla la búsqueda (sin internet, servicio caído), igual dejamos el pin guardado
+    // pero el cliente debe escribir la dirección a mano para poder continuar.
+    toast('No pudimos traducir el pin a una dirección. Escríbela a mano, por favor.', 'error');
+  } finally {
+    btnConfirmar.textContent = textoOriginal;
+    btnConfirmar.disabled = false;
+    cerrarMapaUbicacion();
+  }
 });
+
+// ============================================================
+// PERSISTENCIA DEL CARRITO EN PROGRESO — sobrevive a que se cierre
+// la app de verdad (no solo navegar hacia atrás), por ejemplo si el
+// celular mata la pestaña al cambiar a WhatsApp o por poca memoria.
+// ============================================================
+function guardarCarritoLocal() {
+  if (!cart.length) { localStorage.removeItem(CARRITO_LOCAL_KEY); return; }
+  try {
+    localStorage.setItem(CARRITO_LOCAL_KEY, JSON.stringify({
+      cart, datosEntrega, checkoutStep, propinaSeleccionada, regaloActivo, gpsCoords, notasEspeciales,
+      fecha: Date.now(),
+    }));
+  } catch (e) { /* si el almacenamiento está lleno o bloqueado, seguimos sin persistencia, sin tronar la app */ }
+}
+
+function borrarCarritoLocal() {
+  localStorage.removeItem(CARRITO_LOCAL_KEY);
+}
+
+function restaurarCarritoLocal() {
+  let guardado;
+  try { guardado = JSON.parse(localStorage.getItem(CARRITO_LOCAL_KEY) || 'null'); } catch { guardado = null; }
+  if (!guardado || !guardado.cart?.length) return;
+
+  const horasTranscurridas = (Date.now() - (guardado.fecha || 0)) / 3600000;
+  if (horasTranscurridas > CARRITO_LOCAL_MAX_HORAS) { borrarCarritoLocal(); return; }
+
+  // Revalidamos cada platillo contra el menú actual — nunca confiamos a ciegas en precios/disponibilidad viejos
+  let omitidos = 0, cambiados = 0;
+  const cartRestaurado = [];
+  guardado.cart.forEach(item => {
+    const p = PRODUCTOS.find(x => x.id === item.producto_id);
+    if (!p || p.disponible === false) { omitidos++; return; }
+    const extra = (item.modificadores || []).reduce((a, m) => a + Number(m.precio_extra || 0), 0);
+    const precioActual = Number(p.precio_base) + extra;
+    if (Math.abs(precioActual - Number(item.precio_unitario || 0)) > 0.01) cambiados++;
+    cartRestaurado.push({ ...item, nombre: p.nombre, precio_unitario: precioActual, subtotal: precioActual * item.cantidad });
+  });
+
+  if (!cartRestaurado.length) { borrarCarritoLocal(); return; }
+
+  cart = cartRestaurado;
+  datosEntrega = { ...datosEntrega, ...guardado.datosEntrega };
+  checkoutStep = Math.min(Math.max(guardado.checkoutStep || 0, 0), 2);
+  propinaSeleccionada = guardado.propinaSeleccionada || propinaSeleccionada;
+  regaloActivo = guardado.regaloActivo || false;
+  gpsCoords = guardado.gpsCoords || null;
+  notasEspeciales = guardado.notasEspeciales || '';
+
+  actualizarCartUI();
+
+  if (omitidos && cambiados) toast(`Recuperamos tu pedido — ${omitidos} platillo(s) ya no disponibles y ${cambiados} con precio actualizado.`, 'error');
+  else if (omitidos) toast(`Recuperamos tu pedido — ${omitidos} platillo(s) ya no están disponibles.`, 'error');
+  else if (cambiados) toast(`Recuperamos tu pedido — ${cambiados} platillo(s) cambiaron de precio.`);
+  else toast('Recuperamos tu pedido en progreso ✓');
+
+  // Si ya estaba a media del checkout (no solo viendo el carrito), lo reabrimos directo en ese paso
+  if (checkoutStep > 0) {
+    pushNavState();
+    renderCart();
+    document.getElementById('cartDrawer').classList.remove('hidden');
+  }
+}
 
 // ============================================================
 // RECONOCER CLIENTE RECURRENTE POR TELÉFONO
@@ -2693,6 +2794,7 @@ async function confirmarPedido() {
     notasEspeciales = '';
     regaloActivo = false;
     gpsCoords = null;
+    borrarCarritoLocal();
     datosEntrega.nombreDestinatario = '';
     datosEntrega.telefonoDestinatario = '';
     datosEntrega.mensajeRegalo = '';
@@ -2907,6 +3009,7 @@ document.getElementById('vaciarCarrito').addEventListener('click', () => {
   cart = [];
   regaloActivo = false;
   checkoutStep = 0;
+  borrarCarritoLocal();
   renderCart(); actualizarCartUI();
   volverACategorias(true);
   toast('Carrito vacío');
