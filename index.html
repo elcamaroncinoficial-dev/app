@@ -25,6 +25,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Fraunces:ital,wght@0,600;0,700;1,600;1,700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
   tailwind.config = {
     theme: {
@@ -2405,27 +2407,7 @@ function renderCart() {
   const btnGPS = document.getElementById('btnUsarGPS');
   if (btnGPS) {
     btnGPS.addEventListener('click', () => {
-      if (!navigator.geolocation) {
-        toast('Tu navegador no permite compartir ubicación.', 'error');
-        return;
-      }
-      const originalText = btnGPS.textContent;
-      btnGPS.textContent = 'Ubicando...';
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          btnGPS.textContent = originalText;
-          const link = document.getElementById('gpsVerMapaLink');
-          if (link) link.href = `https://www.google.com/maps/search/?api=1&query=${gpsCoords.lat},${gpsCoords.lng}`;
-          document.getElementById('gpsStatus').classList.remove('hidden');
-          toast('Ubicación capturada — revisa el mapa para confirmar que es correcta ✓');
-        },
-        () => {
-          btnGPS.textContent = originalText;
-          toast('No pudimos obtener tu ubicación. Escribe la dirección con el mayor detalle posible.', 'error');
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
+      abrirMapaUbicacion();
     });
   }
 
@@ -2459,6 +2441,75 @@ function renderCart() {
   }
   if (datosEntrega.telefono) buscarClienteRecurrente();
 }
+
+// ============================================================
+// MAPA INTERACTIVO PARA ELEGIR UBICACIÓN (OpenStreetMap + Leaflet — gratuito, sin llave de API)
+// ============================================================
+const UBICACION_DEFECTO = { lat: 19.6403, lng: -99.1700 }; // Los Reyes, Tultitlán — centro aproximado si no hay GPS
+let mapaUbicacionInstancia = null;
+let mapaUbicacionMarcador = null;
+let mapaUbicacionCoordsTemp = null;
+
+function abrirMapaUbicacion() {
+  document.getElementById('mapaUbicacionModal').classList.remove('hidden');
+  pushNavState();
+
+  const centro = gpsCoords || UBICACION_DEFECTO;
+  mapaUbicacionCoordsTemp = { ...centro };
+
+  setTimeout(() => {
+    if (!mapaUbicacionInstancia) {
+      mapaUbicacionInstancia = L.map('mapaUbicacionContenedor').setView([centro.lat, centro.lng], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19,
+      }).addTo(mapaUbicacionInstancia);
+      mapaUbicacionMarcador = L.marker([centro.lat, centro.lng], { draggable: true }).addTo(mapaUbicacionInstancia);
+      mapaUbicacionMarcador.on('dragend', () => {
+        const pos = mapaUbicacionMarcador.getLatLng();
+        mapaUbicacionCoordsTemp = { lat: pos.lat, lng: pos.lng };
+      });
+      mapaUbicacionInstancia.on('click', (e) => {
+        mapaUbicacionMarcador.setLatLng(e.latlng);
+        mapaUbicacionCoordsTemp = { lat: e.latlng.lat, lng: e.latlng.lng };
+      });
+    } else {
+      mapaUbicacionInstancia.setView([centro.lat, centro.lng], 16);
+      mapaUbicacionMarcador.setLatLng([centro.lat, centro.lng]);
+      mapaUbicacionInstancia.invalidateSize();
+    }
+
+    // Si el navegador tiene permiso de GPS, intentamos centrar más preciso (silencioso, sin bloquear el mapa si falla)
+    if (!gpsCoords && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const detectado = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          mapaUbicacionInstancia.setView([detectado.lat, detectado.lng], 16);
+          mapaUbicacionMarcador.setLatLng([detectado.lat, detectado.lng]);
+          mapaUbicacionCoordsTemp = detectado;
+        },
+        () => { /* silencioso — el cliente puede ubicarse a mano arrastrando el pin */ },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+  }, 50); // deja que el modal termine de mostrarse antes de inicializar el mapa (Leaflet necesita medir el contenedor visible)
+}
+
+function cerrarMapaUbicacion() {
+  document.getElementById('mapaUbicacionModal').classList.add('hidden');
+}
+
+document.getElementById('mapaUbicacionCerrarBtn').addEventListener('click', cerrarMapaUbicacion);
+document.getElementById('mapaUbicacionOverlay').addEventListener('click', cerrarMapaUbicacion);
+document.getElementById('mapaUbicacionConfirmarBtn').addEventListener('click', () => {
+  gpsCoords = mapaUbicacionCoordsTemp;
+  const link = document.getElementById('gpsVerMapaLink');
+  if (link) link.href = `https://www.google.com/maps/search/?api=1&query=${gpsCoords.lat},${gpsCoords.lng}`;
+  const status = document.getElementById('gpsStatus');
+  if (status) status.classList.remove('hidden');
+  cerrarMapaUbicacion();
+  toast('Ubicación confirmada ✓');
+});
 
 // ============================================================
 // RECONOCER CLIENTE RECURRENTE POR TELÉFONO
@@ -2895,6 +2946,10 @@ function pushNavState() {
 history.replaceState({ camaroncinNav: true }, '');
 
 window.addEventListener('popstate', () => {
+  if (!document.getElementById('mapaUbicacionModal').classList.contains('hidden')) {
+    cerrarMapaUbicacion();
+    return;
+  }
   if (!document.getElementById('productModal').classList.contains('hidden')) {
     cerrarProducto();
     return;
@@ -3149,6 +3204,22 @@ document.addEventListener('click', async (e) => {
   setTimeout(() => { btn.textContent = textoOriginal; }, 1500);
 });
 </script>
+<!-- ============ MODAL: ELEGIR UBICACIÓN EN EL MAPA (arrastra el pin) ============ -->
+<div id="mapaUbicacionModal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+  <div class="absolute inset-0 bg-black/40" id="mapaUbicacionOverlay"></div>
+  <div class="relative bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-line">
+      <h3 class="font-display font-700 text-[16px]">Confirma tu ubicación</h3>
+      <button id="mapaUbicacionCerrarBtn" class="w-8 h-8 rounded-full bg-line/70 flex items-center justify-center text-lg leading-none">&times;</button>
+    </div>
+    <p class="text-[12.5px] text-muted px-5 pt-3 pb-1">Arrastra el pin 📍 hasta el punto exacto de entrega.</p>
+    <div id="mapaUbicacionContenedor" style="height: 320px; width: 100%;"></div>
+    <div class="p-4">
+      <button id="mapaUbicacionConfirmarBtn" class="w-full btn-gradient text-white font-display font-600 rounded-2xl py-3 text-[14.5px] shadow-sm">Usar esta ubicación</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ MODAL DE BIENVENIDA (solo primera vez, apodo + teléfono) ============ -->
 <div id="modalBienvenida" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center">
   <div class="absolute inset-0 bg-black/40"></div>
