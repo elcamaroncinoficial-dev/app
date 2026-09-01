@@ -335,14 +335,14 @@
 
     <div class="flex flex-col gap-2">
      ${[
-       ['1', 'Abre la app', 'Ve una pantalla de carga breve (~2s) y luego el menú.'],
-       ['2', 'Se le reconoce (si ya la usó)', 'Si es su primera vez, le pedimos apodo + teléfono, una sola vez, sin contraseña. Si ya la usó, lo saluda por su nombre.'],
-       ['3', 'Explora categorías', 'Chilaquiles, Hot Cakes, Hamburguesas, Bebidas, etc. Algunas tienen subcategorías (ej. Bebidas → Café, Aguas, Licuados...).'],
-       ['4', 'Elige un platillo', 'Se abre un modal que le pide, en orden: cantidad (si aplica) → lo obligatorio (proteína, salsa, tamaño) → lo opcional gratis (cómo lo quiere preparado) → lo opcional con costo (extras).'],
-       ['5', 'Agrega al carrito', 'Puede seguir agregando más platillos. Le sugerimos una bebida si no lleva ninguna.'],
+       ['1', 'Abre la app', 'Ve una pantalla de carga breve y luego el menú, con la promoción del día si tienes una activa.'],
+       ['2', 'Se le reconoce (si ya la usó)', 'Si es su primera vez, le pedimos apodo + teléfono desde el ícono de menú (☰) → Mi Perfil, sin contraseña. Si ya la usó, lo saluda por su nombre.'],
+       ['3', 'Explora categorías', 'Entradas, Tacos y empanadas, Sopas, Barra fría, Platos fuertes, Especialidades, De la tierra, Pequeños navegantes, Extra, Bebidas y Postre. El menú (☰) también deja ver el directorio completo y saltar directo a un platillo.'],
+       ['4', 'Elige un platillo', 'Se abre un modal que le pide, en orden: cantidad (si aplica) → lo obligatorio (proteína, tamaño) → lo opcional gratis (cómo lo quiere preparado) → lo opcional con costo (extras).'],
+       ['5', 'Agrega al carrito', 'Puede seguir agregando más platillos, ver sus favoritos frecuentes o repetir un pedido anterior desde "Mis Pedidos".'],
        ['6', 'Revisa su pedido', 'Ve el carrito completo, puede ajustar cantidades, agregar propina, marcarlo como regalo para alguien más.'],
-       ['7', 'Confirma y paga', 'Llena nombre, teléfono y dirección de entrega (o usa su ubicación GPS). Elige efectivo o transferencia.'],
-       ['8', 'Se abre WhatsApp', 'El pedido completo, ya armado y ordenado, se manda por WhatsApp al número del negocio — listo para confirmar.'],
+       ['7', 'Confirma y paga', 'Llena nombre, teléfono y dirección de entrega (o usa su ubicación GPS, o una guardada en su libreta). Elige efectivo o transferencia.'],
+       ['8', 'Se abre WhatsApp', 'El pedido completo, ya armado y ordenado, se manda por WhatsApp al número del negocio — listo para confirmar. Este paso siempre funciona, sea cual sea el estado de las notificaciones push.'],
        ['9', 'Tú lo recibes aquí', 'En la pestaña "Pedidos" de este panel puedes ver, actualizar el estatus y darle seguimiento a cada pedido.'],
      ].map(([n, titulo, texto]) => `
        <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
@@ -361,10 +361,11 @@
     <h3 class="font-display font-700 text-[16px] text-ink mb-1">🖥️ Cómo funciona este panel (lo que estás viendo ahora)</h3>
     <div class="grid sm:grid-cols-2 gap-3 mt-3">
      ${[
-       ['Pedidos', 'Todos los pedidos que van llegando. Cambia su estatus conforme los vas preparando y entregando.'],
-       ['Métricas', 'Qué se está vendiendo más, cuánto llevas de ingresos, tendencias.'],
-       ['Menú', 'Prende/apaga platillos (agotados), márcalos como favoritos, ajusta precio y costo. Busca por nombre o navega por categoría.'],
-       ['Costos', 'Calcula tu margen real por platillo y tu punto de equilibrio del negocio.'],
+       ['Pedidos', 'Todos los pedidos que van llegando en vivo. Cambia su estatus conforme los vas preparando y entregando.'],
+       ['Métricas', 'Qué se está vendiendo más, cuánto llevas de ingresos y las tendencias de los últimos días.'],
+       ['Menú', 'Abre/cierra la tienda, configura el banner promocional, revisa premios de lealtad pendientes de entregar, y administra cada platillo: agotado del día, destacado, precio, costo, y zonas de entrega con su costo de envío.'],
+       ['Costos', 'Calcula tu margen real por platillo y el punto de equilibrio del negocio, con una calculadora de precio sugerido según el margen que quieras.'],
+       ['Opiniones', 'Buzón privado de comentarios de tus clientes — no se publican en la app. Úsalo para detectar quejas recurrentes o ideas de mejora antes de que se conviertan en un problema.'],
      ].map(([t, d]) => `
        <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
         <p class="font-display font-600 text-[13.5px] text-forest">${t}</p>
@@ -374,47 +375,42 @@
     </div>
    </div>
 
-   <!-- 3) Por qué y cómo conectar Supabase + Netlify -->
+   <!-- 3) Agotado vs Descontinuado -->
    <div>
-    <h3 class="font-display font-700 text-[16px] text-ink mb-1">🔌 Por qué conectar Supabase y Netlify</h3>
-    <p class="text-[13px] text-muted mb-4">Ahora mismo la app corre en <strong>modo demostración</strong>: los platillos, precios y pedidos que ves aquí son datos de prueba guardados dentro del propio archivo — nada de esto es real todavía, y nada se guarda de verdad entre un dispositivo y otro.</p>
-
-    <div class="space-y-3">
-     <div class="bg-goldSoft/60 border border-gold/30 rounded-2xl p-4">
-      <p class="font-display font-700 text-[14px] text-ink mb-1">¿Por qué necesito una base de datos real (Supabase)?</p>
-      <ul class="text-[12.5px] text-ink/80 space-y-1.5 list-disc pl-4">
-       <li>Los pedidos de verdad de tus clientes se guardan ahí — hoy, en modo demo, no se guarda nada real.</li>
-       <li>Cuando apagas un platillo "agotado" desde este panel, se refleja en la app que ve el cliente — solo funciona con base de datos real conectada.</li>
-       <li>El "te reconocemos por tu apodo" solo funciona entre dispositivos distintos si hay una base de datos compartida — sin ella, cada celular tiene su propia memoria local, aislada.</li>
-       <li>Reportes de ventas, métricas y costos reales requieren pedidos reales guardados en algún lado.</li>
-      </ul>
+    <h3 class="font-display font-700 text-[16px] text-ink mb-1">🍤 "Agotado" vs "Descontinuado" — no son lo mismo</h3>
+    <p class="text-[13px] text-muted mb-4">En la pestaña Menú, cada platillo tiene dos controles distintos. Usar el correcto evita confusiones con tus clientes.</p>
+    <div class="grid sm:grid-cols-2 gap-3">
+     <div class="bg-white rounded-2xl border border-line p-4">
+      <p class="font-display font-700 text-[14px] text-forest mb-1">Interruptor verde — "Agotado hoy"</p>
+      <p class="text-[12.5px] text-ink/80">Para cuando se te acabó el insumo por hoy, pero el platillo sigue siendo parte de tu carta. El cliente lo sigue viendo en el menú, pero no lo puede pedir. Actívalo de nuevo mañana.</p>
      </div>
-
-     <div class="bg-forestLight/10 border border-forestLight/30 rounded-2xl p-4">
-      <p class="font-display font-700 text-[14px] text-ink mb-1">¿Por qué necesito publicarla en un hosting (Netlify)?</p>
-      <ul class="text-[12.5px] text-ink/80 space-y-1.5 list-disc pl-4">
-       <li>Ahora mismo solo tú puedes abrir el archivo en tu propio celular/computadora — tus clientes no tienen forma de acceder a él.</li>
-       <li>Netlify le da a tu app una dirección web real (tipo <code class="bg-white px-1 rounded">chilaquilems.netlify.app</code>) que puedes compartir, poner en tus redes, o convertir en QR para la mesa.</li>
-       <li>Es gratuito para este tamaño de negocio, y da HTTPS (candado de seguridad) automático — necesario para que el navegador confíe en la página.</li>
-      </ul>
-     </div>
-
-     <div class="bg-white border border-line rounded-2xl p-4">
-      <p class="font-display font-700 text-[14px] text-ink mb-2">Pasos generales para conectar todo (a grandes rasgos)</p>
-      <ol class="text-[12.5px] text-ink/80 space-y-2 list-decimal pl-4">
-       <li>Crea una cuenta gratuita en <strong>supabase.com</strong> y un proyecto nuevo.</li>
-       <li>Dentro de Supabase, crea las tablas que la app necesita (categorías, productos, grupos, opciones, pedidos, clientes, zonas de envío, etc.) — tu desarrollador puede darte el detalle exacto de cada una.</li>
-       <li>Copia la <strong>URL del proyecto</strong> y la <strong>llave pública (anon key)</strong> desde la configuración de Supabase.</li>
-       <li>Pega esos dos valores en la parte de arriba de <code class="bg-line/40 px-1 rounded">index.html</code> y <code class="bg-line/40 px-1 rounded">admin.html</code>, donde dice <code class="bg-line/40 px-1 rounded">SUPABASE_URL</code> y <code class="bg-line/40 px-1 rounded">SUPABASE_ANON_KEY</code>.</li>
-       <li>Crea una cuenta gratuita en <strong>netlify.com</strong>, arrastra la carpeta con tus archivos (o conéctala a tu repositorio), y publica.</li>
-       <li>Prueba haciendo un pedido de prueba de principio a fin, y confirma que aparezca aquí, en la pestaña "Pedidos".</li>
-      </ol>
-      <p class="text-[12px] text-muted mt-3">💡 Este es un resumen general para que entiendas el "por qué" — la conexión técnica exacta (crear las tablas, sus columnas y permisos) la hace tu desarrollador contigo.</p>
+     <div class="bg-white rounded-2xl border border-line p-4">
+      <p class="font-display font-700 text-[14px] text-accent mb-1">Ícono de bote de basura — "Descontinuar"</p>
+      <p class="text-[12.5px] text-ink/80">Para cuando un platillo ya no es parte de tu carta (de plano, no solo por hoy). Desaparece por completo del menú del cliente — no se ve, no sale en el buscador, ni en favoritos. Se puede reactivar después desde el mismo botón sin perder su historial.</p>
      </div>
     </div>
    </div>
 
+   <!-- 4) Preguntas frecuentes / troubleshooting -->
+   <div>
+    <h3 class="font-display font-700 text-[16px] text-ink mb-1">🛠️ Si algo no cuadra</h3>
+    <div class="space-y-2 mt-3">
+     ${[
+       ['No me llegó la notificación de un pedido nuevo', 'El canal garantizado es WhatsApp: cada pedido siempre se manda ahí sin importar nada más. Las notificaciones push del navegador son un aviso adicional; revisa periódicamente la pestaña "Pedidos" mientras confirmas que el push esté bien configurado en tu celular.'],
+       ['Un cliente dice que no puede pedir cierto platillo', 'Revisa en la pestaña Menú si quedó marcado como "agotado" (interruptor verde apagado) o "descontinuado" (ver sección de arriba) por accidente.'],
+       ['Cambié el precio de un platillo y no se refleja', 'Verifica que le diste clic fuera del campo de precio para que se guarde el cambio — se guarda automáticamente al perder el foco, no hace falta un botón aparte.'],
+       ['Quiero agregar un platillo nuevo que no existe todavía', 'Hoy el panel solo permite editar platillos existentes. Para dar de alta uno nuevo, pídelo directamente para que se agregue en la base de datos.'],
+     ].map(([t, d]) => `
+       <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+        <p class="font-display font-600 text-[13.5px] text-ink">${t}</p>
+        <p class="text-[12.5px] text-muted mt-0.5">${d}</p>
+       </div>
+     `).join('')}
+    </div>
+   </div>
+
   </section>
+
 
  </main>
 </div>
