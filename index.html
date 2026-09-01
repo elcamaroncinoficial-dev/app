@@ -667,6 +667,10 @@ let propinaSeleccionada = { tipo: '0', monto: 0 }; // tipo: '0' | '5' | '10' | '
 let notasEspeciales = ''; // instrucciones especiales del cliente
 let regaloActivo = false; // true si el pedido es un regalo para alguien más
 let checkoutStep = 0; // 0=Tu pedido, 1=Datos de entrega, 2=Pago y confirmación
+// Datos de entrega — persisten aunque se vuelva a renderizar el carrito o se cierre y reabra,
+// para que el cliente nunca tenga que volver a escribir todo desde cero por error.
+let datosEntrega = { nombre: '', telefono: '', direccion: '', nombreDestinatario: '', telefonoDestinatario: '', mensajeRegalo: '' };
+let irAPasoCheckoutRef = null; // referencia a la función interna de renderCart(), para que el botón "atrás" del celular pueda usarla
 let perfilUsuario = null; // {apodo, telefono} — se guarda local (y en Supabase cuando hay backend real) la primera vez
 let TIENDA_ABIERTA = true;
 let searchTerm = '';
@@ -2148,26 +2152,26 @@ function renderCart() {
         <p class="text-[12px] text-muted -mt-0.5">Estos datos son de la persona que va a <strong>recibir</strong> el pedido — la dirección de abajo también es la suya.</p>
         <div>
           <label class="block text-[12px] font-medium text-muted mb-1">Nombre de quien lo recibe</label>
-          <input id="inpNombreDestinatario" type="text" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="¿Cómo se llama?" />
+          <input id="inpNombreDestinatario" type="text" value="${escapeHtml(datosEntrega.nombreDestinatario)}" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="¿Cómo se llama?" />
         </div>
         <div>
           <label class="block text-[12px] font-medium text-muted mb-1">Teléfono de quien lo recibe</label>
-          <input id="inpTelefonoDestinatario" type="tel" maxlength="10" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="55XXXXXXXX" />
+          <input id="inpTelefonoDestinatario" type="tel" maxlength="10" value="${escapeHtml(datosEntrega.telefonoDestinatario)}" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="55XXXXXXXX" />
         </div>
         <div>
           <label class="block text-[12px] font-medium text-muted mb-1">Mensaje para el regalo <span class="font-normal">(opcional)</span></label>
-          <textarea id="inpMensajeRegalo" rows="2" maxlength="200" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="Ej. ¡Feliz cumpleaños! Espero que lo disfrutes 🎉"></textarea>
+          <textarea id="inpMensajeRegalo" rows="2" maxlength="200" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="Ej. ¡Feliz cumpleaños! Espero que lo disfrutes 🎉">${escapeHtml(datosEntrega.mensajeRegalo)}</textarea>
         </div>
       </div>
 
       <div>
         <label class="block text-[12px] font-medium text-muted mb-1" id="lblTuNombre">Tu nombre</label>
-        <input id="inpNombre" type="text" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="¿Cómo te llamas?" />
+        <input id="inpNombre" type="text" value="${escapeHtml(datosEntrega.nombre)}" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="¿Cómo te llamas?" />
       </div>
 
       <div>
         <label class="block text-[12px] font-medium text-muted mb-1" id="lblTuTelefono">Teléfono (10 dígitos)</label>
-        <input id="inpTelefono" type="tel" maxlength="10" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="55XXXXXXXX" />
+        <input id="inpTelefono" type="tel" maxlength="10" value="${escapeHtml(datosEntrega.telefono)}" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="55XXXXXXXX" />
       </div>
       <div id="savedAddresses" class="hidden space-y-1.5"></div>
 
@@ -2176,8 +2180,8 @@ function renderCart() {
           <label class="block text-[12px] font-medium text-muted" id="lblDireccion">Dirección de entrega</label>
           <button type="button" id="btnUsarGPS" class="text-[11.5px] font-medium text-accent flex items-center gap-1"><span class="w-[13px] h-[13px] inline-block" data-icon-slot="pin"></span> Usar mi ubicación</button>
         </div>
-        <textarea id="inpDireccion" rows="2" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="Calle, número, colonia, referencias"></textarea>
-        <p id="gpsStatus" class="hidden text-[11.5px] text-forest mt-1 font-medium flex items-center gap-1"><span class="w-[13px] h-[13px] inline-block" data-icon-slot="pin"></span> Ubicación exacta capturada — el repartidor la verá en el mapa sin errores.</p>
+        <textarea id="inpDireccion" rows="2" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="Calle, número, colonia, referencias">${escapeHtml(datosEntrega.direccion)}</textarea>
+        <p id="gpsStatus" class="hidden text-[11.5px] text-forest mt-1 font-medium flex items-center gap-1"><span class="w-[13px] h-[13px] inline-block" data-icon-slot="pin"></span> Ubicación exacta capturada — <a id="gpsVerMapaLink" href="#" target="_blank" class="underline">ver en el mapa para confirmar que es correcta</a>.</p>
       </div>
 
       ${ZONAS.length ? `
@@ -2305,12 +2309,15 @@ function renderCart() {
     const scrollArea = document.querySelector('#cartDrawer .overflow-y-auto');
     if (scrollArea) scrollArea.scrollTop = 0;
   }
+  // La exponemos a nivel módulo para que el botón "atrás" del celular (popstate)
+  // pueda retroceder un paso del checkout en vez de cerrar todo el carrito.
+  irAPasoCheckoutRef = irAPasoCheckout;
 
   const btnSig1 = document.getElementById('btnSiguientePedido');
-  if (btnSig1) btnSig1.addEventListener('click', () => irAPasoCheckout(1));
+  if (btnSig1) btnSig1.addEventListener('click', () => { irAPasoCheckout(1); pushNavState(); });
 
   const btnAtrasE = document.getElementById('btnAtrasEntrega');
-  if (btnAtrasE) btnAtrasE.addEventListener('click', () => irAPasoCheckout(0));
+  if (btnAtrasE) btnAtrasE.addEventListener('click', () => { history.back(); });
 
   const btnSigE = document.getElementById('btnSiguienteEntrega');
   if (btnSigE) btnSigE.addEventListener('click', () => {
@@ -2325,10 +2332,11 @@ function renderCart() {
     }
     if (!nombre || !telefono || !direccion) { toast('Falta tu nombre, tu teléfono o la dirección de entrega.', 'error'); return; }
     irAPasoCheckout(2);
+    pushNavState();
   });
 
   const btnAtrasP = document.getElementById('btnAtrasPago');
-  if (btnAtrasP) btnAtrasP.addEventListener('click', () => irAPasoCheckout(1));
+  if (btnAtrasP) btnAtrasP.addEventListener('click', () => { history.back(); });
 
   irAPasoCheckout(checkoutStep);
 
@@ -2407,8 +2415,10 @@ function renderCart() {
         (pos) => {
           gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           btnGPS.textContent = originalText;
+          const link = document.getElementById('gpsVerMapaLink');
+          if (link) link.href = `https://www.google.com/maps/search/?api=1&query=${gpsCoords.lat},${gpsCoords.lng}`;
           document.getElementById('gpsStatus').classList.remove('hidden');
-          toast('Ubicación capturada ✓');
+          toast('Ubicación capturada — revisa el mapa para confirmar que es correcta ✓');
         },
         () => {
           btnGPS.textContent = originalText;
@@ -2419,20 +2429,35 @@ function renderCart() {
     });
   }
 
-  // el texto de la dirección sirve para referencias del repartidor; el pin GPS (si se capturó) se usa aparte para el mapa exacto
+  // Guardamos lo que el cliente va escribiendo en tiempo real, para que nunca se pierda
+  // aunque se vuelva a renderizar el carrito (agregar/quitar platillos) o se cierre y reabra.
+  const inpNombreEl = document.getElementById('inpNombre');
+  const inpTelefonoEl = document.getElementById('inpTelefono');
+  const inpDireccionEl = document.getElementById('inpDireccion');
+  const inpNombreDestEl = document.getElementById('inpNombreDestinatario');
+  const inpTelefonoDestEl = document.getElementById('inpTelefonoDestinatario');
+  const inpMensajeRegaloEl = document.getElementById('inpMensajeRegalo');
+  if (inpNombreEl) inpNombreEl.addEventListener('input', () => { datosEntrega.nombre = inpNombreEl.value; });
+  if (inpTelefonoEl) inpTelefonoEl.addEventListener('input', () => { datosEntrega.telefono = inpTelefonoEl.value; });
+  if (inpDireccionEl) inpDireccionEl.addEventListener('input', () => { datosEntrega.direccion = inpDireccionEl.value; });
+  if (inpNombreDestEl) inpNombreDestEl.addEventListener('input', () => { datosEntrega.nombreDestinatario = inpNombreDestEl.value; });
+  if (inpTelefonoDestEl) inpTelefonoDestEl.addEventListener('input', () => { datosEntrega.telefonoDestinatario = inpTelefonoDestEl.value; });
+  if (inpMensajeRegaloEl) inpMensajeRegaloEl.addEventListener('input', () => { datosEntrega.mensajeRegalo = inpMensajeRegaloEl.value; });
 
   document.getElementById('confirmarPedido').addEventListener('click', confirmarPedido);
   document.getElementById('inpTelefono').addEventListener('blur', buscarClienteRecurrente);
 
-  // Si ya tenemos un perfil guardado (apodo + teléfono), precargamos el teléfono
-  // para que no tenga que volver a escribirlo, y disparamos la búsqueda de dirección guardada.
-  if (perfilUsuario?.telefono) {
-    const telInput = document.getElementById('inpTelefono');
-    if (!telInput.value.trim()) {
-      telInput.value = perfilUsuario.telefono;
-      buscarClienteRecurrente();
-    }
+  // Si ya tenemos un perfil guardado (apodo + teléfono), precargamos nombre y teléfono
+  // para que no tenga que volver a escribirlos, y disparamos la búsqueda de dirección guardada.
+  if (perfilUsuario?.telefono && !datosEntrega.telefono) {
+    datosEntrega.telefono = perfilUsuario.telefono;
+    inpTelefonoEl.value = perfilUsuario.telefono;
   }
+  if (perfilUsuario?.apodo && !datosEntrega.nombre) {
+    datosEntrega.nombre = perfilUsuario.apodo;
+    inpNombreEl.value = perfilUsuario.apodo;
+  }
+  if (datosEntrega.telefono) buscarClienteRecurrente();
 }
 
 // ============================================================
@@ -2449,7 +2474,8 @@ async function buscarClienteRecurrente() {
   if (!cliente) { box.classList.add('hidden'); box.innerHTML = ''; return; }
 
   const nombreInput = document.getElementById('inpNombre');
-  if (!nombreInput.value.trim() && cliente.nombre) nombreInput.value = cliente.nombre;
+  const nombreDetectado = cliente.nombre || cliente.apodo;
+  if (!nombreInput.value.trim() && nombreDetectado) { nombreInput.value = nombreDetectado; datosEntrega.nombre = nombreDetectado; }
 
   const { data: direcciones } = await supabase.from('direcciones').select('*').eq('cliente_id', cliente.id).eq('oculta', false).order('created_at', { ascending: false }).limit(4);
   if (!direcciones || !direcciones.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
@@ -2464,7 +2490,9 @@ async function buscarClienteRecurrente() {
 
   box.querySelectorAll('.savedAddrBtn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.getElementById('inpDireccion').value = decodeURIComponent(btn.dataset.dir);
+      const direccionElegida = decodeURIComponent(btn.dataset.dir);
+      document.getElementById('inpDireccion').value = direccionElegida;
+      datosEntrega.direccion = direccionElegida;
       toast('Dirección aplicada ✓');
     });
   });
@@ -2613,6 +2641,12 @@ async function confirmarPedido() {
     propinaSeleccionada = { tipo: '0', monto: 0 };
     notasEspeciales = '';
     regaloActivo = false;
+    gpsCoords = null;
+    datosEntrega.nombreDestinatario = '';
+    datosEntrega.telefonoDestinatario = '';
+    datosEntrega.mensajeRegalo = '';
+    // Nombre, teléfono y dirección SÍ se conservan a propósito — así, si vuelve a pedir
+    // en la misma visita a la app, no tiene que volver a escribirlos.
     actualizarCartUI();
     cerrarCart();
     volverACategorias(true);
@@ -2644,7 +2678,14 @@ document.getElementById('closeTicket').addEventListener('click', () => {
 // ============================================================
 // UI: abrir/cerrar carrito
 // ============================================================
-function abrirCart() { checkoutStep = 0; pushNavState(); renderCart(); document.getElementById('cartDrawer').classList.remove('hidden'); }
+function abrirCart() {
+  // Si ya había un pedido en progreso (con datos capturados), retomamos donde se quedó
+  // en vez de forzar el regreso al paso 1 y perder de vista el avance.
+  if (!cart.length) checkoutStep = 0;
+  pushNavState();
+  renderCart();
+  document.getElementById('cartDrawer').classList.remove('hidden');
+}
 function cerrarCart() { document.getElementById('cartDrawer').classList.add('hidden'); }
 
 function irAHome() {
@@ -2814,6 +2855,7 @@ document.getElementById('vaciarCarrito').addEventListener('click', () => {
   if (!confirm('¿Vaciar todo el carrito? Se perderá el pedido que llevas armado.')) return;
   cart = [];
   regaloActivo = false;
+  checkoutStep = 0;
   renderCart(); actualizarCartUI();
   volverACategorias(true);
   toast('Carrito vacío');
@@ -2858,6 +2900,12 @@ window.addEventListener('popstate', () => {
     return;
   }
   if (!document.getElementById('cartDrawer').classList.contains('hidden')) {
+    // Si estamos a media del checkout (paso 1 o 2), retrocedemos un solo paso
+    // en vez de cerrar todo el carrito de un jalón — así "atrás" nunca tira el progreso.
+    if (checkoutStep > 0 && irAPasoCheckoutRef) {
+      irAPasoCheckoutRef(checkoutStep - 1);
+      return;
+    }
     cerrarCart();
     return;
   }
