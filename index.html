@@ -2209,6 +2209,15 @@ function renderCart() {
             <span class="block text-center rounded-xl border border-line py-2.5 text-[13px] peer-checked:bg-gradient-to-b peer-checked:from-[#3AA8DC] peer-checked:to-[#054572] peer-checked:text-white peer-checked:border-transparent peer-checked:shadow-md transition">Transferencia</span>
           </label>
         </div>
+        <div id="datosBancariosBox" class="hidden mt-3 bg-cream border border-line rounded-xl p-3.5">
+          <p class="font-display font-600 text-[12.5px] text-ink mb-2">Datos para tu transferencia</p>
+          <div class="text-[13px] text-ink space-y-1">
+            <p><span class="text-muted">CLABE:</span> <span class="font-display font-600">722969020303755309</span></p>
+            <p><span class="text-muted">Beneficiario:</span> Federico Aleman Ortiz</p>
+            <p><span class="text-muted">Institución:</span> Mercado Pago W</p>
+          </div>
+          <p class="text-[11.5px] text-muted mt-2">Envía tu comprobante por WhatsApp junto con la confirmación de tu pedido.</p>
+        </div>
       </div>
 
       <div>
@@ -3056,6 +3065,14 @@ function ocultarSplash() {
 setTimeout(ocultarSplash, 1700);
 
 cargarMenu();
+
+// Muestra/oculta los datos bancarios según la forma de pago elegida en el checkout
+document.addEventListener('change', (e) => {
+  if (e.target.name === 'pago') {
+    const box = document.getElementById('datosBancariosBox');
+    if (box) box.classList.toggle('hidden', e.target.value !== 'transferencia');
+  }
+});
 </script>
 <!-- ============ MODAL DE BIENVENIDA (solo primera vez, apodo + teléfono) ============ -->
 <div id="modalBienvenida" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center">

@@ -108,6 +108,7 @@
      <button data-status="entregado" class="filterBtn bg-white border border-line px-3 py-1.5 rounded-full text-[12.5px] font-medium">Entregado</button>
     </div>
     <div class="flex items-center gap-2">
+     <button id="nuevoPedidoBtn" class="bg-accent text-white px-3.5 py-1.5 rounded-full text-[12.5px] font-medium flex items-center gap-1.5"><span class="w-[13px] h-[13px]" data-icon-slot="plus"></span>Nuevo pedido</button>
      <button id="pushToggleBtn" class="bg-white border border-line text-ink px-3.5 py-1.5 rounded-full text-[12.5px] font-medium flex items-center gap-1.5"><span class="w-[13px] h-[13px]" data-icon-slot="bell"></span><span id="pushToggleTexto">Activar notificaciones</span></button>
      <button id="deleteSelectedBtn" disabled class="hidden bg-white border border-accent text-accent px-3.5 py-1.5 rounded-full text-[12.5px] font-medium items-center gap-1.5"><span class="w-[13px] h-[13px]" data-icon-slot="trash"></span>Borrar seleccionados (<span id="deleteSelectedCount">0</span>)</button>
      <button id="exportCsvBtn" class="bg-forest text-white px-3.5 py-1.5 rounded-full text-[12.5px] font-medium flex items-center gap-1.5"><span class="w-[13px] h-[13px]" data-icon-slot="download"></span>Exportar CSV</button>
@@ -115,6 +116,128 @@
    </div>
    <div id="ordersList" class="space-y-3"></div>
   </section>
+
+  <!-- ============ MODAL: NUEVO PEDIDO MANUAL (ej. llamada telefónica) ============ -->
+  <div id="nuevoPedidoModal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+   <div class="absolute inset-0 bg-black/40" id="nuevoPedidoOverlay"></div>
+   <div class="relative bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto p-5">
+    <div class="flex items-center justify-between mb-4">
+     <h3 class="font-display font-700 text-[17px]">Nuevo pedido manual</h3>
+     <button id="nuevoPedidoCerrarBtn" class="w-8 h-8 rounded-full bg-line/70 flex items-center justify-center text-lg leading-none">&times;</button>
+    </div>
+    <p class="text-[12px] text-muted mb-4">Para pedidos que te llegan por teléfono o en persona. No pasa por WhatsApp — se guarda directo en "Pedidos".</p>
+
+    <div class="space-y-3 mb-4">
+     <div class="grid grid-cols-2 gap-2">
+      <div>
+       <label class="block text-[11px] text-muted mb-1">Nombre del cliente</label>
+       <input id="npNombre" type="text" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px]" placeholder="Ej. Juan Pérez" />
+      </div>
+      <div>
+       <label class="block text-[11px] text-muted mb-1">Teléfono</label>
+       <input id="npTelefono" type="tel" maxlength="10" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px]" placeholder="55XXXXXXXX" />
+      </div>
+     </div>
+     <div>
+      <label class="flex items-center gap-2 text-[12.5px] text-ink mb-1">
+       <input id="npRecogeCheck" type="checkbox" class="rounded" />
+       El cliente recoge en el local (sin dirección de entrega)
+      </label>
+      <input id="npDireccion" type="text" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px]" placeholder="Dirección de entrega" />
+     </div>
+     <div class="grid grid-cols-2 gap-2">
+      <div>
+       <label class="block text-[11px] text-muted mb-1">Forma de pago</label>
+       <select id="npFormaPago" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px]">
+        <option value="efectivo">Efectivo</option>
+        <option value="transferencia">Transferencia</option>
+       </select>
+      </div>
+      <div>
+       <label class="block text-[11px] text-muted mb-1">Costo de envío</label>
+       <input id="npCostoEnvio" type="number" step="0.5" value="0" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px]" />
+      </div>
+     </div>
+    </div>
+
+    <div class="border-t border-line pt-3 mb-3">
+     <p class="font-display font-600 text-[13px] text-muted uppercase tracking-wide mb-2">Platillos</p>
+     <div class="relative mb-2">
+      <input id="npBuscarPlatillo" type="text" placeholder="Buscar platillo por nombre..." class="w-full rounded-xl border border-line pl-3 pr-3 py-2.5 text-[13.5px] bg-white" />
+      <div id="npResultadosBusqueda" class="hidden absolute z-10 left-0 right-0 top-full mt-1 bg-white border border-line rounded-xl shadow-lg max-h-56 overflow-y-auto"></div>
+     </div>
+     <div id="npItemsList" class="space-y-2"></div>
+     <p id="npItemsVacio" class="text-[12px] text-muted py-2">Aún no has agregado ningún platillo.</p>
+    </div>
+
+    <div class="border-t border-line pt-3 mb-3">
+     <label class="block text-[11px] text-muted mb-1">Notas / modificadores especiales (ej. "sin cebolla, salsa aparte")</label>
+     <textarea id="npNotas" rows="2" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px] resize-none"></textarea>
+    </div>
+
+    <div class="flex items-center justify-between bg-cream rounded-2xl p-3.5 mb-4">
+     <span class="font-display font-600 text-[13.5px]">Total</span>
+     <span id="npTotal" class="font-display font-700 text-[18px] text-forest">$0.00</span>
+    </div>
+
+    <button id="npGuardarBtn" class="w-full btn-gradient text-white font-display font-600 rounded-2xl py-3 text-[14.5px] shadow-sm">Guardar pedido</button>
+   </div>
+  </div>
+
+  <!-- ============ MODAL: AGREGAR PLATILLO NUEVO ============ -->
+  <div id="nuevoPlatilloModal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+   <div class="absolute inset-0 bg-black/40" id="nuevoPlatilloOverlay"></div>
+   <div class="relative bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[92vh] overflow-y-auto p-5">
+    <div class="flex items-center justify-between mb-4">
+     <h3 class="font-display font-700 text-[17px]">Agregar platillo nuevo</h3>
+     <button id="nuevoPlatilloCerrarBtn" class="w-8 h-8 rounded-full bg-line/70 flex items-center justify-center text-lg leading-none">&times;</button>
+    </div>
+
+    <div class="space-y-3">
+     <div>
+      <label class="block text-[11px] text-muted mb-1">Foto (opcional)</label>
+      <div class="flex items-center gap-3">
+       <div id="npFotoPreviewWrap" class="w-16 h-16 rounded-xl bg-cream border border-line overflow-hidden shrink-0 flex items-center justify-center text-muted">
+        <img id="npFotoPreviewImg" src="" alt="" class="hidden w-full h-full object-cover" />
+        <span id="npFotoPreviewVacio" class="text-[10px] text-center px-1">Sin foto</span>
+       </div>
+       <div class="flex-1">
+        <label class="inline-block cursor-pointer text-[12.5px] font-display font-600 text-forest bg-cream rounded-full px-3.5 py-1.5">
+         Subir foto
+         <input id="npFotoInput" type="file" accept="image/*" class="hidden" />
+        </label>
+        <p id="npFotoStatus" class="text-[11px] text-muted mt-1">Se comprime automáticamente antes de subir.</p>
+       </div>
+      </div>
+     </div>
+     <div>
+      <label class="block text-[11px] text-muted mb-1">Nombre del platillo</label>
+      <input id="npPlatilloNombre" type="text" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px]" placeholder="Ej. Camarones a la diabla" />
+     </div>
+     <div>
+      <label class="block text-[11px] text-muted mb-1">Categoría</label>
+      <select id="npPlatilloCategoria" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px]"></select>
+     </div>
+     <div class="grid grid-cols-2 gap-2">
+      <div>
+       <label class="block text-[11px] text-muted mb-1">Precio</label>
+       <input id="npPlatilloPrecio" type="number" step="0.5" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px]" placeholder="$0.00" />
+      </div>
+      <div>
+       <label class="block text-[11px] text-muted mb-1">Costo (opcional)</label>
+       <input id="npPlatilloCosto" type="number" step="0.5" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px]" placeholder="$0.00" />
+      </div>
+     </div>
+     <div>
+      <label class="block text-[11px] text-muted mb-1">Descripción</label>
+      <textarea id="npPlatilloDescripcion" rows="3" class="w-full rounded-xl border border-line px-3 py-2 text-[13.5px] resize-none" placeholder="Breve descripción para el cliente"></textarea>
+     </div>
+    </div>
+
+    <button id="npPlatilloGuardarBtn" class="w-full btn-gradient text-white font-display font-600 rounded-2xl py-3 text-[14.5px] shadow-sm mt-4">Guardar platillo</button>
+    <p class="text-[11px] text-muted mt-2 text-center">Se agrega disponible y visible de inmediato en el menú del cliente.</p>
+   </div>
+  </div>
 
   <!-- TAB METRICAS -->
   <section id="tabMetricas" class="hidden">
@@ -193,7 +316,10 @@
 
    <div id="premiosPendientesWrap" class="mb-6"></div>
 
-   <h3 class="font-display font-600 text-[13px] text-muted uppercase tracking-wide mb-3">Productos</h3>
+   <div class="flex items-center justify-between mb-3">
+    <h3 class="font-display font-600 text-[13px] text-muted uppercase tracking-wide">Productos</h3>
+    <button id="nuevoPlatilloBtn" class="bg-accent text-white px-3.5 py-1.5 rounded-full text-[12.5px] font-medium flex items-center gap-1.5"><span class="w-[13px] h-[13px]" data-icon-slot="plus"></span>Agregar platillo</button>
+   </div>
    <div class="relative mb-4">
     <span class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
     <input id="menuAdminSearch" type="text" placeholder="Buscar platillo por nombre..." class="w-full rounded-xl border border-line pl-10 pr-9 py-2.5 text-[13.5px] bg-white focus:outline-none focus:border-forest" />
@@ -5148,6 +5274,156 @@ async function borrarPedidos(ids) {
  return true;
 }
 
+// ---------- NUEVO PEDIDO MANUAL ----------
+let npItems = [];
+let npProductosCache = [];
+
+async function npAbrirModal() {
+  npItems = [];
+  document.getElementById('npNombre').value = '';
+  document.getElementById('npTelefono').value = '';
+  document.getElementById('npDireccion').value = '';
+  document.getElementById('npDireccion').disabled = false;
+  document.getElementById('npRecogeCheck').checked = false;
+  document.getElementById('npFormaPago').value = 'efectivo';
+  document.getElementById('npCostoEnvio').value = '0';
+  document.getElementById('npNotas').value = '';
+  document.getElementById('npBuscarPlatillo').value = '';
+  document.getElementById('npResultadosBusqueda').classList.add('hidden');
+  npRenderItems();
+  document.getElementById('nuevoPedidoModal').classList.remove('hidden');
+
+  if (!DEMO_MODE) {
+    const { data } = await supabase.from('productos').select('id, nombre, precio_base, disponible').eq('descontinuado', false).order('orden');
+    npProductosCache = data || [];
+  }
+}
+function npCerrarModal() {
+  document.getElementById('nuevoPedidoModal').classList.add('hidden');
+}
+
+function npRenderItems() {
+  const list = document.getElementById('npItemsList');
+  const vacio = document.getElementById('npItemsVacio');
+  vacio.classList.toggle('hidden', npItems.length > 0);
+  list.innerHTML = npItems.map((it, idx) => `
+    <div class="flex items-center gap-2 bg-cream rounded-xl px-3 py-2">
+      <span class="flex-1 text-[13px] text-ink truncate">${it.nombre}</span>
+      <button class="npMenosBtn w-6 h-6 rounded-full bg-white border border-line text-[13px] font-bold" data-idx="${idx}">−</button>
+      <span class="text-[13px] w-5 text-center">${it.cantidad}</span>
+      <button class="npMasBtn w-6 h-6 rounded-full bg-white border border-line text-[13px] font-bold" data-idx="${idx}">+</button>
+      <span class="text-[12.5px] font-display font-600 w-16 text-right">${fmt(it.subtotal)}</span>
+      <button class="npQuitarBtn w-6 h-6 rounded-full flex items-center justify-center text-muted" data-idx="${idx}">&times;</button>
+    </div>
+  `).join('');
+  list.querySelectorAll('.npMasBtn').forEach(b => b.addEventListener('click', () => { const i = Number(b.dataset.idx); npItems[i].cantidad++; npItems[i].subtotal = npItems[i].cantidad * npItems[i].precio_unitario; npRenderItems(); npActualizarTotal(); }));
+  list.querySelectorAll('.npMenosBtn').forEach(b => b.addEventListener('click', () => { const i = Number(b.dataset.idx); if (npItems[i].cantidad > 1) { npItems[i].cantidad--; npItems[i].subtotal = npItems[i].cantidad * npItems[i].precio_unitario; } npRenderItems(); npActualizarTotal(); }));
+  list.querySelectorAll('.npQuitarBtn').forEach(b => b.addEventListener('click', () => { npItems.splice(Number(b.dataset.idx), 1); npRenderItems(); npActualizarTotal(); }));
+  npActualizarTotal();
+}
+
+function npActualizarTotal() {
+  const subtotal = npItems.reduce((a, i) => a + i.subtotal, 0);
+  const envio = Number(document.getElementById('npCostoEnvio').value) || 0;
+  document.getElementById('npTotal').textContent = fmt(subtotal + envio);
+}
+
+document.getElementById('npCostoEnvio').addEventListener('input', npActualizarTotal);
+
+document.getElementById('npBuscarPlatillo').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  const box = document.getElementById('npResultadosBusqueda');
+  if (!q) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  const resultados = npProductosCache.filter(p => p.nombre.toLowerCase().includes(q)).slice(0, 8);
+  if (!resultados.length) { box.innerHTML = `<p class="text-[12.5px] text-muted p-3">Sin resultados.</p>`; box.classList.remove('hidden'); return; }
+  box.innerHTML = resultados.map(p => `
+    <button class="npAgregarPlatilloBtn w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-cream border-b border-line last:border-b-0" data-id="${p.id}" ${p.disponible === false ? 'data-agotado="1"' : ''}>
+      <span class="text-[13px] ${p.disponible === false ? 'text-muted line-through' : 'text-ink'}">${p.nombre}</span>
+      <span class="text-[12.5px] text-muted">${fmt(p.precio_base)}</span>
+    </button>
+  `).join('');
+  box.classList.remove('hidden');
+  box.querySelectorAll('.npAgregarPlatilloBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.agotado) { alert('Este platillo está marcado como agotado hoy.'); return; }
+      const prod = npProductosCache.find(p => p.id === btn.dataset.id);
+      const existente = npItems.find(i => i.producto_id === prod.id);
+      if (existente) { existente.cantidad++; existente.subtotal = existente.cantidad * existente.precio_unitario; }
+      else npItems.push({ producto_id: prod.id, nombre: prod.nombre, precio_unitario: Number(prod.precio_base), cantidad: 1, subtotal: Number(prod.precio_base) });
+      npRenderItems();
+      document.getElementById('npBuscarPlatillo').value = '';
+      box.classList.add('hidden');
+    });
+  });
+});
+
+document.getElementById('npRecogeCheck').addEventListener('change', (e) => {
+  document.getElementById('npDireccion').disabled = e.target.checked;
+  if (e.target.checked) document.getElementById('npDireccion').value = 'Recoge en el local';
+  else document.getElementById('npDireccion').value = '';
+});
+
+document.getElementById('nuevoPedidoBtn').addEventListener('click', npAbrirModal);
+document.getElementById('nuevoPedidoCerrarBtn').addEventListener('click', npCerrarModal);
+document.getElementById('nuevoPedidoOverlay').addEventListener('click', npCerrarModal);
+
+document.getElementById('npGuardarBtn').addEventListener('click', async () => {
+  if (DEMO_MODE) { demoBloqueado(); return; }
+  if (!npItems.length) { alert('Agrega al menos un platillo.'); return; }
+  const nombre = document.getElementById('npNombre').value.trim();
+  const telefono = document.getElementById('npTelefono').value.trim();
+  const direccion = document.getElementById('npDireccion').value.trim();
+  const recoge = document.getElementById('npRecogeCheck').checked;
+  if (!nombre) { alert('Escribe el nombre del cliente.'); return; }
+  if (!recoge && !direccion) { alert('Escribe la dirección, o marca "Recoge en el local".'); return; }
+  if (telefono && !/^\d{10}$/.test(telefono)) { alert('El teléfono debe tener 10 dígitos, o déjalo vacío.'); return; }
+
+  const btn = document.getElementById('npGuardarBtn');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    let clienteId = null;
+    if (telefono) {
+      let { data: cliente } = await supabase.from('clientes').select('id').eq('telefono', telefono).maybeSingle();
+      if (!cliente) {
+        const { data: nuevo } = await supabase.from('clientes').insert({ telefono, nombre }).select().single();
+        cliente = nuevo;
+      }
+      clienteId = cliente.id;
+    }
+
+    const subtotal = npItems.reduce((a, i) => a + i.subtotal, 0);
+    const costoEnvio = Number(document.getElementById('npCostoEnvio').value) || 0;
+    const total = subtotal + costoEnvio;
+    const formaPago = document.getElementById('npFormaPago').value;
+    const notas = document.getElementById('npNotas').value.trim();
+
+    const { data: pedido, error: errPedido } = await supabase.from('pedidos').insert({
+      cliente_id: clienteId, telefono: telefono || null, nombre_cliente: nombre,
+      direccion_texto: direccion, forma_pago: formaPago,
+      subtotal, costo_envio: costoEnvio, propina: 0, total, notas: notas || null, status: 'nuevo',
+    }).select().single();
+    if (errPedido) { alert('No se pudo guardar el pedido: ' + errPedido.message); return; }
+
+    const items = npItems.map(i => ({
+      pedido_id: pedido.id, producto_id: i.producto_id, nombre_producto: i.nombre,
+      cantidad: i.cantidad, precio_unitario: i.precio_unitario, modificadores: [], subtotal: i.subtotal,
+    }));
+    const { error: errItems } = await supabase.from('pedido_items').insert(items);
+    if (errItems) { alert('El pedido se creó, pero hubo un problema guardando los platillos: ' + errItems.message); }
+
+    npCerrarModal();
+    cargarPedidos();
+  } catch (e) {
+    alert('Ocurrió un error inesperado: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar pedido';
+  }
+});
+
+
 function renderPedidos(pedidos) {
  const el = document.getElementById('ordersList');
  if (!pedidos.length) { el.innerHTML = `<p class="text-center text-muted py-12 text-[14px]">Sin pedidos en este filtro.</p>`; actualizarBotonBorrarSeleccionados(); return; }
@@ -5450,6 +5726,115 @@ let menuAdminCategoriasCache = [];
 let menuAdminProductosCache = [];
 let menuAdminBuscar = '';
 const menuCatAbiertas = new Set();
+
+// ---------- AGREGAR PLATILLO NUEVO ----------
+let npPlatilloFotoUrl = null;
+
+function npComprimirImagenPlatillo(file, maxLado = 900, calidad = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > height && width > maxLado) { height = Math.round(height * (maxLado / width)); width = maxLado; }
+      else if (height > maxLado) { width = Math.round(width * (maxLado / height)); height = maxLado; }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('No se pudo procesar la imagen')), 'image/jpeg', calidad);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Imagen inválida')); };
+    img.src = url;
+  });
+}
+
+function npPlatilloAbrirModal() {
+  npPlatilloFotoUrl = null;
+  document.getElementById('npFotoPreviewImg').classList.add('hidden');
+  document.getElementById('npFotoPreviewImg').src = '';
+  document.getElementById('npFotoPreviewVacio').classList.remove('hidden');
+  document.getElementById('npFotoStatus').textContent = 'Se comprime automáticamente antes de subir.';
+  document.getElementById('npFotoInput').value = '';
+  document.getElementById('npPlatilloNombre').value = '';
+  document.getElementById('npPlatilloPrecio').value = '';
+  document.getElementById('npPlatilloCosto').value = '';
+  document.getElementById('npPlatilloDescripcion').value = '';
+
+  const select = document.getElementById('npPlatilloCategoria');
+  select.innerHTML = menuAdminCategoriasCache
+    .slice().sort((a, b) => (a.orden ?? 999) - (b.orden ?? 999))
+    .map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+
+  document.getElementById('nuevoPlatilloModal').classList.remove('hidden');
+}
+function npPlatilloCerrarModal() {
+  document.getElementById('nuevoPlatilloModal').classList.add('hidden');
+}
+
+document.getElementById('nuevoPlatilloBtn').addEventListener('click', npPlatilloAbrirModal);
+document.getElementById('nuevoPlatilloCerrarBtn').addEventListener('click', npPlatilloCerrarModal);
+document.getElementById('nuevoPlatilloOverlay').addEventListener('click', npPlatilloCerrarModal);
+
+document.getElementById('npFotoInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('npFotoStatus');
+  status.textContent = 'Subiendo...';
+  try {
+    const blob = await npComprimirImagenPlatillo(file);
+    const nombreArchivo = `platillo-${Date.now()}.jpg`;
+    const { error } = await supabase.storage.from('platillos').upload(nombreArchivo, blob, { upsert: true, contentType: 'image/jpeg' });
+    if (error) { status.textContent = 'Error al subir: ' + error.message; return; }
+    const { data: pub } = supabase.storage.from('platillos').getPublicUrl(nombreArchivo);
+    npPlatilloFotoUrl = pub.publicUrl;
+    const img = document.getElementById('npFotoPreviewImg');
+    img.src = npPlatilloFotoUrl;
+    img.classList.remove('hidden');
+    document.getElementById('npFotoPreviewVacio').classList.add('hidden');
+    status.textContent = 'Foto lista ✓';
+  } catch (err) {
+    status.textContent = 'No se pudo procesar la imagen.';
+  }
+});
+
+document.getElementById('npPlatilloGuardarBtn').addEventListener('click', async () => {
+  if (DEMO_MODE) { demoBloqueado(); return; }
+  const nombre = document.getElementById('npPlatilloNombre').value.trim();
+  const categoriaId = document.getElementById('npPlatilloCategoria').value;
+  const precio = Number(document.getElementById('npPlatilloPrecio').value);
+  const costo = Number(document.getElementById('npPlatilloCosto').value) || 0;
+  const descripcion = document.getElementById('npPlatilloDescripcion').value.trim();
+
+  if (!nombre) { alert('Escribe el nombre del platillo.'); return; }
+  if (!categoriaId) { alert('Elige una categoría.'); return; }
+  if (!precio || precio <= 0) { alert('Escribe un precio válido.'); return; }
+
+  const btn = document.getElementById('npPlatilloGuardarBtn');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    // Calculamos el siguiente número de orden dentro de su categoría, para que nunca quede en 0
+    const { data: existentes } = await supabase.from('productos').select('orden').eq('categoria_id', categoriaId).order('orden', { ascending: false }).limit(1);
+    const siguienteOrden = existentes && existentes.length ? (existentes[0].orden || 0) + 1 : 1;
+
+    const { error } = await supabase.from('productos').insert({
+      categoria_id: categoriaId, nombre, descripcion: descripcion || null,
+      precio_base: precio, costo, imagen_url: npPlatilloFotoUrl,
+      disponible: true, destacado: false, descontinuado: false, orden: siguienteOrden,
+    });
+    if (error) { alert('No se pudo guardar el platillo: ' + error.message); return; }
+
+    npPlatilloCerrarModal();
+    cargarMenuAdmin();
+  } catch (e) {
+    alert('Ocurrió un error inesperado: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Guardar platillo';
+  }
+});
 
 function productoRowAdminHtml(p, fotoCat) {
  return `
