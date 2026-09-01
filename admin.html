@@ -5400,14 +5400,17 @@ const menuCatAbiertas = new Set();
 
 function productoRowAdminHtml(p, fotoCat) {
  return `
-  <div id="prodRow-${p.id}" class="bg-white rounded-2xl border border-line shadow-sm p-3.5 flex items-center gap-2 ${!p.disponible ? 'opacity-50' : ''}">
+  <div id="prodRow-${p.id}" class="bg-white rounded-2xl border border-line shadow-sm p-3.5 flex items-center gap-2 ${!p.disponible ? 'opacity-50' : ''} ${p.descontinuado ? 'opacity-40 grayscale' : ''}">
    <span class="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center bg-[#F4F2EE] text-ink font-display font-700 text-[15px] overflow-hidden">${fotoCat ? `<img src="${fotoCat}" alt="${p.nombre}" class="w-full h-full object-cover" />` : p.nombre.charAt(0).toUpperCase()}</span>
    <button data-id="${p.id}" data-disp="${p.disponible}" class="dispToggle w-9 h-6 rounded-full relative shrink-0 ${p.disponible ? 'bg-forest' : 'bg-line'}">
     <span class="absolute top-0.5 ${p.disponible ? 'right-0.5' : 'left-0.5'} w-5 h-5 rounded-full bg-white block shadow-sm"></span>
    </button>
    <button data-id="${p.id}" data-dest="${p.destacado}" title="Destacar en inicio (favoritos de la casa)" class="destacadoToggle w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-[16px] ${p.destacado ? 'bg-gold/15 text-gold' : 'bg-line/50 text-muted'}">★</button>
+   <button data-id="${p.id}" data-desc="${p.descontinuado}" title="${p.descontinuado ? 'Reactivar en el menú' : 'Descontinuar (lo quita del menú por completo, ya no lo ve el cliente)'}" class="descontinuarToggle w-8 h-8 rounded-xl shrink-0 flex items-center justify-center ${p.descontinuado ? 'bg-accent/15 text-accent' : 'bg-line/50 text-muted'}">
+    <span class="w-[15px] h-[15px] pointer-events-none">${icon('trash')}</span>
+   </button>
    <div class="flex-1 min-w-0">
-    <p class="font-display font-600 text-[14px] truncate">${p.nombre}</p>
+    <p class="font-display font-600 text-[14px] truncate">${p.nombre}${p.descontinuado ? ' <span class="text-[10px] font-700 text-accent align-middle">· Descontinuado</span>' : ''}</p>
     <div class="flex gap-2 mt-1.5 flex-wrap items-end">
      <div>
       <label class="block text-[9px] text-muted mb-0.5">precio</label>
@@ -5517,6 +5520,24 @@ function renderMenuAdminList(categorias, productos) {
    if (prod) prod.destacado = nuevoValor;
    btn.dataset.dest = String(nuevoValor);
    btn.className = `destacadoToggle w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-[16px] ${nuevoValor ? 'bg-gold/15 text-gold' : 'bg-line/50 text-muted'}`;
+  });
+ });
+
+ document.querySelectorAll('.descontinuarToggle').forEach(btn => {
+  btn.addEventListener('click', async () => {
+   if (DEMO_MODE) { demoBloqueado(); return; }
+   const nuevoValor = btn.dataset.desc !== 'true';
+   const prod = menuAdminProductosCache.find(p => p.id === btn.dataset.id);
+   const nombre = prod ? prod.nombre : 'este platillo';
+   if (nuevoValor) {
+    if (!confirm(`¿Descontinuar "${nombre}"?\n\nDesaparecerá por completo del menú del cliente (no como "agotado" — no se podrá ver ni buscar). Podrás reactivarlo después desde este mismo botón.`)) return;
+   }
+   btn.disabled = true;
+   const { error } = await supabase.from('productos').update({ descontinuado: nuevoValor }).eq('id', btn.dataset.id);
+   btn.disabled = false;
+   if (error) { alert('No se pudo actualizar: ' + error.message); return; }
+   if (prod) prod.descontinuado = nuevoValor;
+   renderMenuAdminList(menuAdminCategoriasCache, menuAdminProductosCache);
   });
  });
 
