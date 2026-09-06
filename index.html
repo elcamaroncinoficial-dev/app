@@ -668,6 +668,7 @@ let gpsCoords = null; // {lat, lng} si el cliente usó el botón de ubicación
 let propinaSeleccionada = { tipo: '0', monto: 0 }; // tipo: '0' | '5' | '10' | '15' | 'otra'
 let notasEspeciales = ''; // instrucciones especiales del cliente
 let regaloActivo = false; // true si el pedido es un regalo para alguien más
+let recogeEnTienda = false; // true si el cliente pasa a recoger en el local, en vez de pedir a domicilio
 let checkoutStep = 0; // 0=Tu pedido, 1=Datos de entrega, 2=Pago y confirmación
 // Datos de entrega — persisten aunque se vuelva a renderizar el carrito o se cierre y reabra,
 // para que el cliente nunca tenga que volver a escribir todo desde cero por error.
@@ -1753,6 +1754,14 @@ function abrirProducto(id, editItem = null) {
   const optionRow = (g, o) => {
     const marcado = seleccion[g.id].has(o.id);
     const inputType = g.tipo === 'unico' ? 'radio' : 'checkbox';
+    if (o.disponible === false) {
+      return `
+        <label class="modOptionRow inline-flex items-center gap-1.5 shrink-0 px-4 py-2.5 rounded-full border-2 border-line bg-line/30 text-muted line-through opacity-60 cursor-not-allowed">
+          <span class="text-[14px] font-medium">${o.nombre}</span>
+          <span class="text-[11px] font-medium not-italic no-underline">(agotado)</span>
+        </label>
+      `;
+    }
     return `
       <label class="modOptionRow inline-flex items-center gap-1.5 shrink-0 px-4 py-2.5 rounded-full border-2 cursor-pointer transition ${marcado ? 'border-forest bg-forest text-white shadow-sm' : 'border-line bg-white text-ink'}">
         <input type="${inputType}" data-grupo-id="${g.id}" data-opcion-id="${o.id}" ${marcado ? 'checked' : ''} class="sr-only" />
@@ -2180,6 +2189,18 @@ function renderCart() {
         <label class="block text-[12px] font-medium text-muted mb-1" id="lblTuTelefono">Teléfono (10 dígitos)</label>
         <input id="inpTelefono" type="tel" maxlength="10" value="${escapeHtml(datosEntrega.telefono)}" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" placeholder="55XXXXXXXX" />
       </div>
+
+      <label class="flex items-center gap-3 bg-forestLight/10 border border-forestLight/30 rounded-2xl px-4 py-3 cursor-pointer">
+        <input type="checkbox" id="chkRecogeTienda" ${recogeEnTienda ? 'checked' : ''} class="w-4 h-4 accent-forest shrink-0" />
+        <span class="text-[13px] text-ink">🏪 Recojo en el local <span class="text-muted">(Amado Nervo #58, sin costo de envío)</span></span>
+      </label>
+
+      <div id="infoRecogeTienda" class="${recogeEnTienda ? '' : 'hidden'} bg-cream border border-line rounded-2xl p-3.5 text-[12.5px] text-ink leading-snug">
+        📍 <strong>El Camaroncín ¡Uh Ah Ah!</strong> — Amado Nervo #58, Los Reyes, Tultitlán, Estado de México, C.P. 54900.<br/>
+        Horario: Miércoles a sábado 12:00-19:00 hrs · Domingo y lunes 12:00-18:00 hrs.
+      </div>
+
+      <div id="bloqueDireccionZona" class="${recogeEnTienda ? 'hidden' : ''} space-y-4">
       <div id="savedAddresses" class="hidden space-y-1.5"></div>
 
       <div>
@@ -2199,6 +2220,7 @@ function renderCart() {
           ${ZONAS.map(z => `<option value="${z.id}" data-costo="${z.costo_envio}">${z.nombre} (+${fmt(z.costo_envio)})</option>`).join('')}
         </select>
       </div>` : ''}
+      </div>
 
         <div class="flex gap-2.5 pt-2">
           <button type="button" id="btnAtrasEntrega" class="w-14 h-14 rounded-2xl bg-cream border border-line flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -2327,11 +2349,21 @@ function renderCart() {
   const btnAtrasE = document.getElementById('btnAtrasEntrega');
   if (btnAtrasE) btnAtrasE.addEventListener('click', () => { history.back(); });
 
+  const chkRecoge = document.getElementById('chkRecogeTienda');
+  if (chkRecoge) {
+    chkRecoge.addEventListener('change', () => {
+      recogeEnTienda = chkRecoge.checked;
+      document.getElementById('infoRecogeTienda').classList.toggle('hidden', !recogeEnTienda);
+      document.getElementById('bloqueDireccionZona').classList.toggle('hidden', recogeEnTienda);
+      guardarCarritoLocal();
+    });
+  }
+
   const btnSigE = document.getElementById('btnSiguienteEntrega');
   if (btnSigE) btnSigE.addEventListener('click', () => {
     const nombre = document.getElementById('inpNombre').value.trim();
     const telefono = document.getElementById('inpTelefono').value.trim();
-    const direccion = document.getElementById('inpDireccion').value.trim();
+    const direccion = recogeEnTienda ? 'Recoge en tienda' : document.getElementById('inpDireccion').value.trim();
     const esRegalo = document.getElementById('chkRegalo')?.checked || false;
     if (esRegalo) {
       const nd = document.getElementById('inpNombreDestinatario').value.trim();
@@ -2557,7 +2589,7 @@ function guardarCarritoLocal() {
   if (!cart.length) { localStorage.removeItem(CARRITO_LOCAL_KEY); return; }
   try {
     localStorage.setItem(CARRITO_LOCAL_KEY, JSON.stringify({
-      cart, datosEntrega, checkoutStep, propinaSeleccionada, regaloActivo, gpsCoords, notasEspeciales,
+      cart, datosEntrega, checkoutStep, propinaSeleccionada, regaloActivo, recogeEnTienda, gpsCoords, notasEspeciales,
       fecha: Date.now(),
     }));
   } catch (e) { /* si el almacenamiento está lleno o bloqueado, seguimos sin persistencia, sin tronar la app */ }
@@ -2594,6 +2626,7 @@ function restaurarCarritoLocal() {
   checkoutStep = Math.min(Math.max(guardado.checkoutStep || 0, 0), 2);
   propinaSeleccionada = guardado.propinaSeleccionada || propinaSeleccionada;
   regaloActivo = guardado.regaloActivo || false;
+  recogeEnTienda = guardado.recogeEnTienda || false;
   gpsCoords = guardado.gpsCoords || null;
   notasEspeciales = guardado.notasEspeciales || '';
 
@@ -2659,15 +2692,15 @@ async function confirmarPedido() {
   const waWindow = window.open('', '_blank');
   const nombre = document.getElementById('inpNombre').value.trim();
   const telefono = document.getElementById('inpTelefono').value.trim();
-  const direccion = document.getElementById('inpDireccion').value.trim();
+  const direccion = recogeEnTienda ? 'Recoge en tienda — Amado Nervo #58, Los Reyes, Tultitlán, Estado de México' : document.getElementById('inpDireccion').value.trim();
   const notas = document.getElementById('inpNotas').value.trim();
   const esRegalo = document.getElementById('chkRegalo')?.checked || false;
   const nombreDestinatario = esRegalo ? document.getElementById('inpNombreDestinatario').value.trim() : '';
   const telefonoDestinatario = esRegalo ? document.getElementById('inpTelefonoDestinatario').value.trim() : '';
   const mensajeRegalo = esRegalo ? document.getElementById('inpMensajeRegalo').value.trim() : '';
   const zonaSel = document.getElementById('inpZona');
-  const zonaId = zonaSel ? zonaSel.value || null : null;
-  const costoEnvio = zonaSel && zonaSel.value ? Number(zonaSel.selectedOptions[0].dataset.costo) : 0;
+  const zonaId = recogeEnTienda ? null : (zonaSel ? zonaSel.value || null : null);
+  const costoEnvio = recogeEnTienda ? 0 : (zonaSel && zonaSel.value ? Number(zonaSel.selectedOptions[0].dataset.costo) : 0);
   const formaPago = document.querySelector('input[name="pago"]:checked').value;
   const propinaChecked = document.querySelector('input[name="propina"]:checked');
   let propina = 0;
@@ -2729,17 +2762,21 @@ async function confirmarPedido() {
         cliente = nuevo;
       }
 
-      let { data: dir } = await supabase.from('direcciones').select('*').eq('cliente_id', cliente.id).eq('direccion_texto', direccion).maybeSingle();
-      if (!dir) {
-        const { data: nuevaDir } = await supabase.from('direcciones').insert({
-          cliente_id: cliente.id, direccion_texto: direccion, zona_id: zonaId,
-        }).select().single();
-        dir = nuevaDir;
+      let dir = null;
+      if (!recogeEnTienda) {
+        let { data: dirExistente } = await supabase.from('direcciones').select('*').eq('cliente_id', cliente.id).eq('direccion_texto', direccion).maybeSingle();
+        if (!dirExistente) {
+          const { data: nuevaDir } = await supabase.from('direcciones').insert({
+            cliente_id: cliente.id, direccion_texto: direccion, zona_id: zonaId,
+          }).select().single();
+          dirExistente = nuevaDir;
+        }
+        dir = dirExistente;
       }
 
       const { data: pedido } = await supabase.from('pedidos').insert({
-        cliente_id: cliente.id, direccion_id: dir.id, telefono, nombre_cliente: nombre,
-        direccion_texto: direccion, maps_url: mapsUrl, forma_pago: formaPago,
+        cliente_id: cliente.id, direccion_id: dir ? dir.id : null, telefono, nombre_cliente: nombre,
+        direccion_texto: direccion, maps_url: recogeEnTienda ? null : mapsUrl, forma_pago: formaPago,
         subtotal, costo_envio: costoEnvio, propina, total, notas: notasFinal, status: 'nuevo',
       }).select().single();
 
@@ -2771,10 +2808,10 @@ async function confirmarPedido() {
       msg += `\n\n🎀 *Es un regalo* — quien lo recibe: ${nombreDestinatario} — ${telefonoDestinatario}`;
       if (mensajeRegalo) msg += `\n💌 Mensaje: "${mensajeRegalo}"`;
       msg += `\n\n👤 Lo pidió: ${nombre} — ${telefono}`;
-      msg += `\n📍 Entregar en (dirección de quien recibe): ${direccion}\n${mapsUrl}`;
+      msg += recogeEnTienda ? `\n🏪 *Recoge en tienda* (Amado Nervo #58)` : `\n📍 Entregar en (dirección de quien recibe): ${direccion}\n${mapsUrl}`;
     } else {
       msg += `\n👤 ${nombre} — ${telefono}`;
-      msg += `\n📍 ${direccion}\n${mapsUrl}`;
+      msg += recogeEnTienda ? `\n🏪 *Recoge en tienda* (Amado Nervo #58)` : `\n📍 ${direccion}\n${mapsUrl}`;
     }
     if (notas) msg += `\n\n📝 *Notas especiales:* ${notas}`;
 
@@ -2793,6 +2830,7 @@ async function confirmarPedido() {
     propinaSeleccionada = { tipo: '0', monto: 0 };
     notasEspeciales = '';
     regaloActivo = false;
+    recogeEnTienda = false;
     gpsCoords = null;
     borrarCarritoLocal();
     datosEntrega.nombreDestinatario = '';
@@ -3008,6 +3046,7 @@ document.getElementById('vaciarCarrito').addEventListener('click', () => {
   if (!confirm('¿Vaciar todo el carrito? Se perderá el pedido que llevas armado.')) return;
   cart = [];
   regaloActivo = false;
+  recogeEnTienda = false;
   checkoutStep = 0;
   borrarCarritoLocal();
   renderCart(); actualizarCartUI();
