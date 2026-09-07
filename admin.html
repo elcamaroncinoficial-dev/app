@@ -300,32 +300,62 @@
      <div class="flex items-center gap-3">
       <span class="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0 text-[18px]">🎉</span>
       <div>
-       <p class="font-display font-600 text-[14px]">Banner promocional</p>
-       <p class="text-[12px] text-muted mt-0.5">Se le muestra a cada cliente máximo 1 vez al día</p>
+       <p class="font-display font-600 text-[14px]">Promociones</p>
+       <p class="text-[12px] text-muted mt-0.5">Se le muestra al cliente máximo 1 vez al día, más el botón "Promociones" del menú</p>
       </div>
      </div>
-     <label class="relative inline-flex items-center cursor-pointer shrink-0">
+     <label class="relative inline-flex items-center cursor-pointer shrink-0" title="Apagar esto oculta cualquier promoción, aunque tengas una marcada como activa">
       <input type="checkbox" id="promoActivaCheck" class="sr-only peer" />
       <div class="w-10 h-6 bg-line rounded-full peer peer-checked:bg-forest transition-colors"></div>
       <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
      </label>
     </div>
-    <div class="space-y-2">
-     <input id="promoEmoji" type="text" maxlength="4" placeholder="Emoji (ej. 🎉)" class="w-16 rounded-xl border border-line px-3 py-2 text-[16px] text-center focus:outline-none focus:border-accent" />
-     <input id="promoTitulo" type="text" placeholder="Título de la promo (ej. ¡2x1 en cócteles!)" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" />
-     <textarea id="promoTexto" rows="2" placeholder="Detalle corto de la promoción" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent resize-none"></textarea>
-     <div class="border border-dashed border-line rounded-xl p-3">
-      <p class="text-[12px] text-muted mb-2">Imagen de la promo (opcional) — si subes una, se muestra completa en vez del emoji/título/texto</p>
-      <div id="promoImgPreviewWrap" class="hidden mb-2">
-       <img id="promoImgPreview" class="w-full rounded-lg" style="max-height:160px; object-fit:cover;" />
-       <button type="button" id="promoImgQuitar" class="text-[12px] text-accent font-medium mt-1">Quitar imagen</button>
-      </div>
-      <input type="file" id="promoImgFile" accept="image/*" class="text-[12.5px] w-full" />
-      <p id="promoImgStatus" class="text-[11.5px] text-muted mt-1"></p>
-     </div>
-     <button id="promoGuardarBtn" class="w-full bg-forest text-white font-display font-600 text-[13.5px] rounded-xl py-2.5">Guardar promoción</button>
-    </div>
+    <div id="promoGaleria" class="space-y-2 mb-3"></div>
+    <button id="promoAgregarBtn" type="button" class="w-full border-2 border-dashed border-line rounded-xl py-2.5 text-[13px] font-display font-600 text-muted">+ Agregar promoción a la galería</button>
    </div>
+
+   <!-- ============ MODAL: NUEVA PROMOCIÓN ============ -->
+   <div id="promoModal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+    <div class="absolute inset-0 bg-black/40" id="promoModalOverlay"></div>
+    <div class="relative bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto p-5">
+     <div class="flex items-center justify-between mb-4">
+      <h3 class="font-display font-700 text-[16px]">Nueva promoción</h3>
+      <button id="promoModalCerrarBtn" class="w-8 h-8 rounded-full bg-line/70 flex items-center justify-center text-lg leading-none">&times;</button>
+     </div>
+     <div class="space-y-3">
+      <div class="border border-dashed border-line rounded-xl p-3">
+       <div id="promoModalPreviewWrap" class="hidden mb-2">
+        <img id="promoModalPreview" class="w-full rounded-lg" style="max-height:160px; object-fit:cover;" />
+       </div>
+       <input type="file" id="promoModalImgFile" accept="image/*" class="text-[12.5px] w-full" />
+       <p id="promoModalImgStatus" class="text-[11.5px] text-muted mt-1"></p>
+      </div>
+      <div>
+       <label class="block text-[11px] text-muted mb-1">Descripción (esto es lo único que ve el cliente, junto con la imagen)</label>
+       <textarea id="promoModalDescripcion" rows="2" placeholder="Ej. ¡2x1 en cócteles todos los martes!" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] resize-none"></textarea>
+      </div>
+      <div>
+       <label class="block text-[11px] text-muted mb-1">¿Dónde va el texto respecto a la imagen?</label>
+       <select id="promoModalPosicion" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] bg-white">
+        <option value="abajo">Abajo de la imagen</option>
+        <option value="arriba">Arriba de la imagen</option>
+        <option value="sobre">Sobre la imagen (superpuesto)</option>
+       </select>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+       <div>
+        <label class="block text-[11px] text-muted mb-1">Vigencia desde (solo tuyo, el cliente no la ve)</label>
+        <input id="promoModalVigenciaInicio" type="date" class="w-full rounded-xl border border-line px-3 py-2 text-[13px]" />
+       </div>
+       <div>
+        <label class="block text-[11px] text-muted mb-1">Vigencia hasta</label>
+        <input id="promoModalVigenciaFin" type="date" class="w-full rounded-xl border border-line px-3 py-2 text-[13px]" />
+       </div>
+      </div>
+     </div>
+     <button id="promoModalGuardarBtn" class="w-full btn-gradient text-white font-display font-600 rounded-2xl py-3 text-[14.5px] shadow-sm mt-4">Guardar en la galería</button>
+   </div>
+  </div>
 
    <div id="premiosPendientesWrap" class="mb-6"></div>
 
@@ -630,6 +660,32 @@ const CONFIG = {
  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0ZmVndW1hZmNtZ3FtdXhpd3poIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTUzMzQsImV4cCI6MjEwMTg3MTMzNH0.TCgd7FBIHIPcZ3m6pejAPHXhwZPzrd3sC3PQSQXtkjA',
 };
 const DEMO_MODE = !CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL === 'TU_SUPABASE_URL';
+
+// ============================================================
+// NAVEGACIÓN CON EL BOTÓN "ATRÁS" DEL CELULAR
+// Sin esto, el primer back-press cierra la app entera (no hay historial propio).
+// Cada modal que se abre agrega un nivel; "atrás" cierra el modal más reciente
+// en vez de salir de la app, igual que ya hicimos en index.html.
+// ============================================================
+function pushNavStateAdmin() {
+  history.pushState({ camaroncinAdminNav: true }, '');
+}
+history.replaceState({ camaroncinAdminNav: true }, ''); // línea base, para que el primer "atrás" no salga de inmediato
+
+window.addEventListener('popstate', () => {
+  const modalesAbiertos = [
+    { id: 'nuevoPedidoModal', cerrar: () => typeof npCerrarModal === 'function' && npCerrarModal() },
+    { id: 'nuevoPlatilloModal', cerrar: () => typeof npPlatilloCerrarModal === 'function' && npPlatilloCerrarModal() },
+    { id: 'opcionesDisponibilidadModal', cerrar: () => typeof odCerrarModal === 'function' && odCerrarModal() },
+    { id: 'promoModal', cerrar: () => typeof promoModalCerrar === 'function' && promoModalCerrar() },
+  ];
+  for (const m of modalesAbiertos) {
+    const el = document.getElementById(m.id);
+    if (el && !el.classList.contains('hidden')) { m.cerrar(); return; }
+  }
+  // Si no hay ningún modal abierto, no hacemos nada: dejamos que el siguiente
+  // "atrás" salga de la app con normalidad, que es lo esperado.
+});
 const supabase = DEMO_MODE ? null : createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 const fmt = (n) => '$' + Number(n).toFixed(2);
 
@@ -5305,6 +5361,7 @@ async function npAbrirModal() {
   document.getElementById('npResultadosBusqueda').classList.add('hidden');
   npRenderItems();
   document.getElementById('nuevoPedidoModal').classList.remove('hidden');
+  pushNavStateAdmin();
 
   if (!DEMO_MODE) {
     const { data } = await supabase.from('productos').select('id, nombre, precio_base, disponible').eq('descontinuado', false).order('orden');
@@ -5639,6 +5696,7 @@ async function cargarMenuAdmin() {
  renderPremiosPendientes(premios || []);
  renderMenuAdminList(cats || [], prods || []);
  renderZonas(zonas || []);
+ cargarPromoGaleria();
 }
 
 function renderTiendaToggle(config) {
@@ -5653,57 +5711,117 @@ function renderTiendaToggle(config) {
  };
 
  document.getElementById('promoActivaCheck').checked = !!(config && config.promo_activa);
- document.getElementById('promoEmoji').value = (config && config.promo_emoji) || '🎉';
- document.getElementById('promoTitulo').value = (config && config.promo_titulo) || '';
- document.getElementById('promoTexto').value = (config && config.promo_texto) || '';
-
- let promoImagenUrlActual = (config && config.promo_imagen_url) || null;
- const promoPreviewWrap = document.getElementById('promoImgPreviewWrap');
- const promoPreviewImg = document.getElementById('promoImgPreview');
- if (promoImagenUrlActual) {
-  promoPreviewImg.src = promoImagenUrlActual;
-  promoPreviewWrap.classList.remove('hidden');
- }
-
- document.getElementById('promoImgQuitar').onclick = () => {
-  promoImagenUrlActual = null;
-  promoPreviewWrap.classList.add('hidden');
-  document.getElementById('promoImgFile').value = '';
- };
-
- document.getElementById('promoImgFile').onchange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+ document.getElementById('promoActivaCheck').onchange = async (e) => {
   if (DEMO_MODE) { demoBloqueado(); return; }
-  const status = document.getElementById('promoImgStatus');
-  status.textContent = 'Subiendo imagen...';
-  const nombreArchivo = `promo-${Date.now()}.jpg`;
-  const { error } = await supabase.storage.from('platillos').upload(nombreArchivo, file, { upsert: true });
-  if (error) {
-   status.textContent = 'Error al subir: ' + error.message;
-   return;
-  }
-  const { data: pub } = supabase.storage.from('platillos').getPublicUrl(nombreArchivo);
-  promoImagenUrlActual = pub.publicUrl;
-  promoPreviewImg.src = promoImagenUrlActual;
-  promoPreviewWrap.classList.remove('hidden');
-  status.textContent = 'Imagen lista — no olvides tocar "Guardar promoción".';
- };
-
- document.getElementById('promoGuardarBtn').onclick = async () => {
-  if (DEMO_MODE) { demoBloqueado(); return; }
-  const btnGuardar = document.getElementById('promoGuardarBtn');
-  btnGuardar.disabled = true; btnGuardar.textContent = 'Guardando...';
-  await supabase.from('configuracion').update({
-   promo_activa: document.getElementById('promoActivaCheck').checked,
-   promo_emoji: document.getElementById('promoEmoji').value || '🎉',
-   promo_titulo: document.getElementById('promoTitulo').value,
-   promo_texto: document.getElementById('promoTexto').value,
-   promo_imagen_url: promoImagenUrlActual,
-  }).eq('id', 1);
-  btnGuardar.disabled = false; btnGuardar.textContent = 'Guardar promoción';
+  await supabase.from('configuracion').update({ promo_activa: e.target.checked }).eq('id', 1);
  };
 }
+
+// ---------- GALERÍA DE PROMOCIONES ----------
+let promoGaleriaCache = [];
+
+async function cargarPromoGaleria() {
+ if (DEMO_MODE) { document.getElementById('promoGaleria').innerHTML = `<p class="text-[12.5px] text-muted">No disponible en modo demo.</p>`; return; }
+ const { data, error } = await supabase.from('promociones').select('*').order('creado_en', { ascending: false });
+ if (error) { document.getElementById('promoGaleria').innerHTML = `<p class="text-[12.5px] text-accent">Error al cargar: ${error.message}</p>`; return; }
+ promoGaleriaCache = data || [];
+ renderPromoGaleria();
+}
+
+function renderPromoGaleria() {
+ const el = document.getElementById('promoGaleria');
+ if (!promoGaleriaCache.length) { el.innerHTML = `<p class="text-[12.5px] text-muted py-2">Aún no has subido ninguna promoción.</p>`; return; }
+ el.innerHTML = promoGaleriaCache.map(promo => `
+  <div class="flex items-center gap-2.5 bg-cream rounded-xl p-2.5">
+   <img src="${promo.imagen_url}" alt="Promoción" class="w-12 h-12 rounded-lg object-cover shrink-0" />
+   <div class="flex-1 min-w-0">
+    <p class="text-[12.5px] text-ink truncate">${promo.descripcion || '(sin descripción)'}</p>
+    <p class="text-[10.5px] text-muted">${promo.vigencia_inicio ? `Vigencia: ${promo.vigencia_inicio} a ${promo.vigencia_fin || '?'}` : 'Sin vigencia definida'}</p>
+   </div>
+   <button data-id="${promo.id}" class="promoActivarBtn shrink-0 text-[11px] font-display font-600 rounded-full px-3 py-1.5 ${promo.activa ? 'bg-forest text-white' : 'bg-white border border-line text-muted'}">${promo.activa ? '✓ Activa' : 'Activar'}</button>
+   <button data-id="${promo.id}" class="promoBorrarBtn shrink-0 w-7 h-7 rounded-full bg-white border border-line flex items-center justify-center text-muted">
+    <span class="w-[12px] h-[12px] pointer-events-none">${icon('trash')}</span>
+   </button>
+  </div>
+ `).join('');
+
+ el.querySelectorAll('.promoActivarBtn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+   if (DEMO_MODE) { demoBloqueado(); return; }
+   btn.disabled = true;
+   await supabase.from('promociones').update({ activa: false }).neq('id', btn.dataset.id);
+   const { error } = await supabase.from('promociones').update({ activa: true }).eq('id', btn.dataset.id);
+   btn.disabled = false;
+   if (error) { alert('No se pudo activar: ' + error.message); return; }
+   cargarPromoGaleria();
+  });
+ });
+ el.querySelectorAll('.promoBorrarBtn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+   if (DEMO_MODE) { demoBloqueado(); return; }
+   if (!confirm('¿Borrar esta promoción de la galería?')) return;
+   const { error } = await supabase.from('promociones').delete().eq('id', btn.dataset.id);
+   if (error) { alert('No se pudo borrar: ' + error.message); return; }
+   cargarPromoGaleria();
+  });
+ });
+}
+
+let promoModalImagenUrl = null;
+function promoModalAbrir() {
+ promoModalImagenUrl = null;
+ document.getElementById('promoModalPreview').classList.add('hidden');
+ document.getElementById('promoModalPreviewWrap').classList.add('hidden');
+ document.getElementById('promoModalImgFile').value = '';
+ document.getElementById('promoModalImgStatus').textContent = '';
+ document.getElementById('promoModalDescripcion').value = '';
+ document.getElementById('promoModalPosicion').value = 'abajo';
+ document.getElementById('promoModalVigenciaInicio').value = '';
+ document.getElementById('promoModalVigenciaFin').value = '';
+ document.getElementById('promoModal').classList.remove('hidden');
+ pushNavStateAdmin();
+}
+function promoModalCerrar() { document.getElementById('promoModal').classList.add('hidden'); }
+
+document.getElementById('promoAgregarBtn').addEventListener('click', promoModalAbrir);
+document.getElementById('promoModalCerrarBtn').addEventListener('click', promoModalCerrar);
+document.getElementById('promoModalOverlay').addEventListener('click', promoModalCerrar);
+
+document.getElementById('promoModalImgFile').addEventListener('change', async (e) => {
+ const file = e.target.files[0];
+ if (!file) return;
+ if (DEMO_MODE) { demoBloqueado(); return; }
+ const status = document.getElementById('promoModalImgStatus');
+ status.textContent = 'Subiendo imagen...';
+ const nombreArchivo = `promo-${Date.now()}.jpg`;
+ const { error } = await supabase.storage.from('platillos').upload(nombreArchivo, file, { upsert: true });
+ if (error) { status.textContent = 'Error al subir: ' + error.message; return; }
+ const { data: pub } = supabase.storage.from('platillos').getPublicUrl(nombreArchivo);
+ promoModalImagenUrl = pub.publicUrl;
+ const img = document.getElementById('promoModalPreview');
+ img.src = promoModalImagenUrl;
+ img.classList.remove('hidden');
+ document.getElementById('promoModalPreviewWrap').classList.remove('hidden');
+ status.textContent = 'Imagen lista ✓';
+});
+
+document.getElementById('promoModalGuardarBtn').addEventListener('click', async () => {
+ if (DEMO_MODE) { demoBloqueado(); return; }
+ if (!promoModalImagenUrl) { alert('Sube una imagen para la promoción.'); return; }
+ const btn = document.getElementById('promoModalGuardarBtn');
+ btn.disabled = true; btn.textContent = 'Guardando...';
+ const { error } = await supabase.from('promociones').insert({
+  imagen_url: promoModalImagenUrl,
+  descripcion: document.getElementById('promoModalDescripcion').value.trim() || null,
+  posicion_texto: document.getElementById('promoModalPosicion').value,
+  vigencia_inicio: document.getElementById('promoModalVigenciaInicio').value || null,
+  vigencia_fin: document.getElementById('promoModalVigenciaFin').value || null,
+ });
+ btn.disabled = false; btn.textContent = 'Guardar en la galería';
+ if (error) { alert('No se pudo guardar: ' + error.message); return; }
+ promoModalCerrar();
+ cargarPromoGaleria();
+});
 
 function renderPremiosPendientes(clientes) {
  const wrap = document.getElementById('premiosPendientesWrap');
@@ -5780,6 +5898,7 @@ function npPlatilloAbrirModal() {
     .map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
 
   document.getElementById('nuevoPlatilloModal').classList.remove('hidden');
+  pushNavStateAdmin();
 }
 function npPlatilloCerrarModal() {
   document.getElementById('nuevoPlatilloModal').classList.add('hidden');
@@ -5798,6 +5917,7 @@ async function odAbrirModal(productoId, nombrePlatillo) {
   document.getElementById('odTitulo').textContent = `Disponibilidad — ${nombrePlatillo}`;
   document.getElementById('odContenido').innerHTML = `<p class="text-[13px] text-muted">Cargando...</p>`;
   document.getElementById('opcionesDisponibilidadModal').classList.remove('hidden');
+  pushNavStateAdmin();
 
   const { data: enlaces, error } = await supabase
     .from('producto_grupos')
@@ -5914,31 +6034,37 @@ document.getElementById('npPlatilloGuardarBtn').addEventListener('click', async 
 
 function productoRowAdminHtml(p, fotoCat) {
  return `
-  <div id="prodRow-${p.id}" class="bg-white rounded-2xl border border-line shadow-sm p-3.5 flex items-center gap-2 ${!p.disponible ? 'opacity-50' : ''} ${p.descontinuado ? 'opacity-40 grayscale' : ''}">
-   <span class="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center bg-[#F4F2EE] text-ink font-display font-700 text-[15px] overflow-hidden">${fotoCat ? `<img src="${fotoCat}" alt="${p.nombre}" class="w-full h-full object-cover" />` : p.nombre.charAt(0).toUpperCase()}</span>
-   <button data-id="${p.id}" data-disp="${p.disponible}" class="dispToggle w-9 h-6 rounded-full relative shrink-0 ${p.disponible ? 'bg-forest' : 'bg-line'}">
-    <span class="absolute top-0.5 ${p.disponible ? 'right-0.5' : 'left-0.5'} w-5 h-5 rounded-full bg-white block shadow-sm"></span>
-   </button>
-   <button data-id="${p.id}" data-dest="${p.destacado}" title="Destacar en inicio (favoritos de la casa)" class="destacadoToggle w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-[16px] ${p.destacado ? 'bg-gold/15 text-gold' : 'bg-line/50 text-muted'}">★</button>
-   <button data-id="${p.id}" data-desc="${p.descontinuado}" title="${p.descontinuado ? 'Reactivar en el menú' : 'Descontinuar (lo quita del menú por completo, ya no lo ve el cliente)'}" class="descontinuarToggle w-8 h-8 rounded-xl shrink-0 flex items-center justify-center ${p.descontinuado ? 'bg-accent/15 text-accent' : 'bg-line/50 text-muted'}">
-    <span class="w-[15px] h-[15px] pointer-events-none">${icon('trash')}</span>
-   </button>
-   <button data-id="${p.id}" data-nombre="${p.nombre}" title="Administrar disponibilidad de tamaños/variantes" class="opcionesDisponibilidadBtn w-8 h-8 rounded-xl shrink-0 flex items-center justify-center bg-line/50 text-muted">
-    <span class="w-[15px] h-[15px] pointer-events-none">${icon('menu')}</span>
-   </button>
-   <div class="flex-1 min-w-0">
-    <p class="font-display font-600 text-[14px] truncate">${p.nombre}${p.descontinuado ? ' <span class="text-[10px] font-700 text-accent align-middle">· Descontinuado</span>' : ''}</p>
-    <div class="flex gap-2 mt-1.5 flex-wrap items-end">
-     <div>
-      <label class="block text-[9px] text-muted mb-0.5">precio</label>
-      <input data-id="${p.id}" type="number" step="0.5" value="${p.precio_base}" class="precioInput text-[13px] rounded-lg border border-line px-2 py-1 w-16 " />
-     </div>
-     <div>
-      <label class="block text-[9px] text-muted mb-0.5">costo</label>
-      <input data-id="${p.id}" type="number" step="0.5" value="${p.costo || 0}" class="costoInput text-[13px] rounded-lg border border-line px-2 py-1 w-16 " />
-     </div>
-     <span class="text-[11px] text-forest font-semibold pb-1 whitespace-nowrap">${marginPct(p.precio_base, p.costo)}% margen</span>
+  <div id="prodRow-${p.id}" class="bg-white rounded-2xl border border-line shadow-sm p-3.5 ${!p.disponible ? 'opacity-50' : ''} ${p.descontinuado ? 'opacity-40 grayscale' : ''}">
+   <div class="flex items-start gap-2.5 mb-2.5">
+    <span class="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center bg-[#F4F2EE] text-ink font-display font-700 text-[15px] overflow-hidden">${p.imagen_url ? `<img src="${p.imagen_url}" alt="${p.nombre}" class="w-full h-full object-cover" />` : fotoCat ? `<img src="${fotoCat}" alt="${p.nombre}" class="w-full h-full object-cover" />` : p.nombre.charAt(0).toUpperCase()}</span>
+    <p class="font-display font-600 text-[14px] leading-snug flex-1 min-w-0">${p.nombre}${p.descontinuado ? ' <span class="text-[10px] font-700 text-accent align-middle">· Descontinuado</span>' : ''}</p>
+   </div>
+   <div class="flex items-center gap-2 mb-2.5 flex-wrap">
+    <button data-id="${p.id}" data-disp="${p.disponible}" class="dispToggle w-9 h-6 rounded-full relative shrink-0 ${p.disponible ? 'bg-forest' : 'bg-line'}">
+     <span class="absolute top-0.5 ${p.disponible ? 'right-0.5' : 'left-0.5'} w-5 h-5 rounded-full bg-white block shadow-sm"></span>
+    </button>
+    <button data-id="${p.id}" data-dest="${p.destacado}" title="Destacar en inicio (favoritos de la casa)" class="destacadoToggle w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-[16px] ${p.destacado ? 'bg-gold/15 text-gold' : 'bg-line/50 text-muted'}">★</button>
+    <button data-id="${p.id}" data-desc="${p.descontinuado}" title="Descontinuar (lo quita del menú por completo, ya no lo ve el cliente)" ${p.descontinuado ? 'style="display:none"' : ''} class="descontinuarToggle w-8 h-8 rounded-xl shrink-0 flex items-center justify-center bg-line/50 text-muted">
+     <span class="w-[15px] h-[15px] pointer-events-none">${icon('trash')}</span>
+    </button>
+    <button data-id="${p.id}" data-desc="${p.descontinuado}" title="Reactivar en el menú" ${p.descontinuado ? '' : 'style="display:none"'} class="descontinuarToggle h-8 px-2.5 rounded-xl shrink-0 flex items-center gap-1 bg-forest/15 text-forest">
+     <span class="w-[13px] h-[13px] pointer-events-none">${icon('check')}</span>
+     <span class="text-[11px] font-display font-600 pointer-events-none">Reactivar</span>
+    </button>
+    <button data-id="${p.id}" data-nombre="${p.nombre}" title="Administrar disponibilidad de tamaños/variantes" class="opcionesDisponibilidadBtn w-8 h-8 rounded-xl shrink-0 flex items-center justify-center bg-line/50 text-muted">
+     <span class="w-[15px] h-[15px] pointer-events-none">${icon('menu')}</span>
+    </button>
+   </div>
+   <div class="flex gap-2 flex-wrap items-end">
+    <div>
+     <label class="block text-[9px] text-muted mb-0.5">precio</label>
+     <input data-id="${p.id}" type="number" step="0.5" value="${p.precio_base}" class="precioInput text-[13px] rounded-lg border border-line px-2 py-1 w-16 " />
     </div>
+    <div>
+     <label class="block text-[9px] text-muted mb-0.5">costo</label>
+     <input data-id="${p.id}" type="number" step="0.5" value="${p.costo || 0}" class="costoInput text-[13px] rounded-lg border border-line px-2 py-1 w-16 " />
+    </div>
+    <span class="text-[11px] text-forest font-semibold pb-1 whitespace-nowrap">${marginPct(p.precio_base, p.costo)}% margen</span>
    </div>
   </div>
  `;
