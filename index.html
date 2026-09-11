@@ -2271,13 +2271,16 @@ function renderCart() {
       </div>
 
       ${ZONAS.length ? `
-      <div>
+      <div id="zonaManualWrap" class="${costoEnvioCalculado ? 'hidden' : ''}">
         <label class="block text-[12px] font-medium text-muted mb-1">Zona de entrega</label>
         <select id="inpZona" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] bg-white">
           <option value="">Sin costo de envío</option>
           ${ZONAS.map(z => `<option value="${z.id}" data-costo="${z.costo_envio}">${z.nombre} (+${fmt(z.costo_envio)})</option>`).join('')}
         </select>
       </div>` : ''}
+      <div id="envioCalculadoBox" class="${costoEnvioCalculado ? '' : 'hidden'} bg-cream border border-line rounded-xl p-3 text-[13px] text-ink">
+        ${costoEnvioCalculado ? `📍 Tu pedido está a ~${costoEnvioCalculado.km.toFixed(1)} km del negocio — costo de envío: <strong>${fmt(costoEnvioCalculado.costo)}</strong>` : ''}
+      </div>
       </div>
 
         <div class="flex gap-2.5 pt-2">
@@ -2521,7 +2524,14 @@ function renderCart() {
   const inpMensajeRegaloEl = document.getElementById('inpMensajeRegalo');
   if (inpNombreEl) inpNombreEl.addEventListener('input', () => { datosEntrega.nombre = inpNombreEl.value; guardarCarritoLocal(); });
   if (inpTelefonoEl) inpTelefonoEl.addEventListener('input', () => { datosEntrega.telefono = inpTelefonoEl.value; guardarCarritoLocal(); });
-  if (inpDireccionEl) inpDireccionEl.addEventListener('input', () => { datosEntrega.direccion = inpDireccionEl.value; guardarCarritoLocal(); });
+  if (inpDireccionEl) inpDireccionEl.addEventListener('input', () => {
+    datosEntrega.direccion = inpDireccionEl.value;
+    // Si ya había un envío calculado por GPS y el cliente ahora escribe una dirección
+    // distinta a mano, ese cálculo ya no es confiable — lo limpiamos y regresamos
+    // al selector manual de zona, para no cobrar un envío que no corresponde.
+    if (costoEnvioCalculado) { costoEnvioCalculado = null; gpsCoords = null; actualizarBloqueEnvioCalculado(); }
+    guardarCarritoLocal();
+  });
   if (inpNombreDestEl) inpNombreDestEl.addEventListener('input', () => { datosEntrega.nombreDestinatario = inpNombreDestEl.value; guardarCarritoLocal(); });
   if (inpTelefonoDestEl) inpTelefonoDestEl.addEventListener('input', () => { datosEntrega.telefonoDestinatario = inpTelefonoDestEl.value; guardarCarritoLocal(); });
   if (inpMensajeRegaloEl) inpMensajeRegaloEl.addEventListener('input', () => { datosEntrega.mensajeRegalo = inpMensajeRegaloEl.value; guardarCarritoLocal(); });
@@ -2549,6 +2559,64 @@ const UBICACION_DEFECTO = { lat: 19.6403, lng: -99.1700 }; // Los Reyes, Tultitl
 let mapaUbicacionInstancia = null;
 let mapaUbicacionMarcador = null;
 let mapaUbicacionCoordsTemp = null;
+let mapaUbicacionCirculo = null;
+
+// ============================================================
+// ENVÍO CALCULADO AUTOMÁTICAMENTE POR DISTANCIA REAL AL NEGOCIO
+// ============================================================
+let UBICACION_NEGOCIO = null; // se geocodifica una sola vez y se guarda en caché en este dispositivo
+let costoEnvioCalculado = null; // { km, costo } una vez que el cliente confirma su ubicación en el mapa
+
+async function obtenerUbicacionNegocio() {
+  if (UBICACION_NEGOCIO) return UBICACION_NEGOCIO;
+  try {
+    const cacheada = localStorage.getItem('camaroncin_ubicacion_negocio_v1');
+    if (cacheada) { UBICACION_NEGOCIO = JSON.parse(cacheada); return UBICACION_NEGOCIO; }
+  } catch (e) { /* si el caché está corrupto, lo ignoramos y volvemos a geocodificar */ }
+  try {
+    const resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent('Amado Nervo 58, Los Reyes, Tultitlán, Estado de México, 54900, México')}&format=json&limit=1`);
+    const data = await resp.json();
+    if (data && data[0]) {
+      UBICACION_NEGOCIO = { lat: Number(data[0].lat), lng: Number(data[0].lon) };
+      localStorage.setItem('camaroncin_ubicacion_negocio_v1', JSON.stringify(UBICACION_NEGOCIO));
+      return UBICACION_NEGOCIO;
+    }
+  } catch (e) { /* sin internet o el servicio falló — usamos el respaldo abajo */ }
+  UBICACION_NEGOCIO = UBICACION_DEFECTO; // respaldo: el mismo centro aproximado que ya usa el mapa
+  return UBICACION_NEGOCIO;
+}
+
+function calcularDistanciaKm(lat1, lng1, lat2, lng2) {
+  const R = 6371; // radio de la Tierra en km
+  const radianes = (g) => g * Math.PI / 180;
+  const dLat = radianes(lat2 - lat1);
+  const dLng = radianes(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(radianes(lat1)) * Math.cos(radianes(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
+function calcularCostoEnvioPorDistancia(km) {
+  if (km <= 2) return 40;
+  if (km <= 3) return 60;
+  if (km <= 4) return 70;
+  return 80; // más de 4km — poco común, pero se cobra el tramo más alto
+}
+
+function actualizarBloqueEnvioCalculado() {
+  const box = document.getElementById('envioCalculadoBox');
+  const zonaWrap = document.getElementById('zonaManualWrap');
+  if (!box) return; // el paso de "Datos de entrega" no está visible en este momento
+  if (costoEnvioCalculado && !recogeEnTienda) {
+    box.classList.remove('hidden');
+    box.innerHTML = `📍 Tu pedido está a ~${costoEnvioCalculado.km.toFixed(1)} km del negocio — costo de envío: <strong>${fmt(costoEnvioCalculado.costo)}</strong>`;
+    if (zonaWrap) zonaWrap.classList.add('hidden');
+  } else {
+    box.classList.add('hidden');
+    if (zonaWrap) zonaWrap.classList.remove('hidden');
+  }
+}
+
+let mapaUbicacionWatchId = null;
 
 function abrirMapaUbicacion() {
   document.getElementById('mapaUbicacionModal').classList.remove('hidden');
@@ -2568,10 +2636,17 @@ function abrirMapaUbicacion() {
       mapaUbicacionMarcador.on('dragend', () => {
         const pos = mapaUbicacionMarcador.getLatLng();
         mapaUbicacionCoordsTemp = { lat: pos.lat, lng: pos.lng };
+        // El cliente ya corrigió el pin a mano — esa posición manda, dejamos de refinar con GPS y quitamos el círculo de precisión (ya no aplica).
+        if (mapaUbicacionWatchId !== null) { navigator.geolocation.clearWatch(mapaUbicacionWatchId); mapaUbicacionWatchId = null; }
+        if (mapaUbicacionCirculo) { mapaUbicacionInstancia.removeLayer(mapaUbicacionCirculo); mapaUbicacionCirculo = null; }
+        document.getElementById('mapaUbicacionPrecision').classList.add('hidden');
       });
       mapaUbicacionInstancia.on('click', (e) => {
         mapaUbicacionMarcador.setLatLng(e.latlng);
         mapaUbicacionCoordsTemp = { lat: e.latlng.lat, lng: e.latlng.lng };
+        if (mapaUbicacionWatchId !== null) { navigator.geolocation.clearWatch(mapaUbicacionWatchId); mapaUbicacionWatchId = null; }
+        if (mapaUbicacionCirculo) { mapaUbicacionInstancia.removeLayer(mapaUbicacionCirculo); mapaUbicacionCirculo = null; }
+        document.getElementById('mapaUbicacionPrecision').classList.add('hidden');
       });
     } else {
       mapaUbicacionInstancia.setView([centro.lat, centro.lng], 16);
@@ -2579,23 +2654,53 @@ function abrirMapaUbicacion() {
       mapaUbicacionInstancia.invalidateSize();
     }
 
-    // Si el navegador tiene permiso de GPS, intentamos centrar más preciso (silencioso, sin bloquear el mapa si falla)
+    // Si el navegador tiene permiso de GPS, refinamos la ubicación por unos segundos:
+    // la primera lectura del GPS suele ser la menos precisa, así que en vez de quedarnos
+    // con esa, escuchamos varias lecturas seguidas y usamos la de mejor precisión.
     if (!gpsCoords && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
+      const precisionEl = document.getElementById('mapaUbicacionPrecision');
+      precisionEl.textContent = '📡 Afinando tu ubicación...';
+      precisionEl.classList.remove('hidden');
+      let mejorPrecision = Infinity;
+
+      mapaUbicacionWatchId = navigator.geolocation.watchPosition(
         (pos) => {
+          const precisionM = Math.round(pos.coords.accuracy);
+          if (precisionM >= mejorPrecision) return; // esta lectura no mejora la anterior, la ignoramos
+          mejorPrecision = precisionM;
+
           const detectado = { lat: pos.coords.latitude, lng: pos.coords.longitude };
           mapaUbicacionInstancia.setView([detectado.lat, detectado.lng], 16);
           mapaUbicacionMarcador.setLatLng([detectado.lat, detectado.lng]);
           mapaUbicacionCoordsTemp = detectado;
+
+          if (mapaUbicacionCirculo) mapaUbicacionInstancia.removeLayer(mapaUbicacionCirculo);
+          mapaUbicacionCirculo = L.circle([detectado.lat, detectado.lng], {
+            radius: pos.coords.accuracy, color: '#3AA8DC', fillColor: '#3AA8DC', fillOpacity: 0.15, weight: 1,
+          }).addTo(mapaUbicacionInstancia);
+
+          precisionEl.textContent = `📍 Precisión: ~${precisionM} m — arrastra el pin si no coincide con tu ubicación exacta`;
+
+          // Con menos de 20m de margen ya es una lectura muy buena, no hace falta seguir escuchando ni gastar batería.
+          if (precisionM < 20 && mapaUbicacionWatchId !== null) {
+            navigator.geolocation.clearWatch(mapaUbicacionWatchId);
+            mapaUbicacionWatchId = null;
+          }
         },
-        () => { /* silencioso — el cliente puede ubicarse a mano arrastrando el pin */ },
-        { enableHighAccuracy: true, timeout: 8000 }
+        () => { precisionEl.classList.add('hidden'); /* silencioso — el cliente puede ubicarse a mano arrastrando el pin */ },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
       );
+
+      // Tope de 6 segundos escuchando — nos quedamos con la mejor lectura que se haya visto en ese tiempo.
+      setTimeout(() => {
+        if (mapaUbicacionWatchId !== null) { navigator.geolocation.clearWatch(mapaUbicacionWatchId); mapaUbicacionWatchId = null; }
+      }, 6000);
     }
   }, 50); // deja que el modal termine de mostrarse antes de inicializar el mapa (Leaflet necesita medir el contenedor visible)
 }
 
 function cerrarMapaUbicacion() {
+  if (mapaUbicacionWatchId !== null) { navigator.geolocation.clearWatch(mapaUbicacionWatchId); mapaUbicacionWatchId = null; }
   document.getElementById('mapaUbicacionModal').classList.add('hidden');
 }
 
@@ -2607,6 +2712,13 @@ document.getElementById('mapaUbicacionConfirmarBtn').addEventListener('click', a
   if (link) link.href = `https://www.google.com/maps/search/?api=1&query=${gpsCoords.lat},${gpsCoords.lng}`;
   const status = document.getElementById('gpsStatus');
   if (status) status.classList.remove('hidden');
+
+  // Calculamos el envío automáticamente según la distancia real a la sucursal
+  const negocio = await obtenerUbicacionNegocio();
+  const km = calcularDistanciaKm(gpsCoords.lat, gpsCoords.lng, negocio.lat, negocio.lng);
+  costoEnvioCalculado = { km, costo: calcularCostoEnvioPorDistancia(km) };
+  actualizarBloqueEnvioCalculado();
+  guardarCarritoLocal();
 
   const btnConfirmar = document.getElementById('mapaUbicacionConfirmarBtn');
   const textoOriginal = btnConfirmar.textContent;
@@ -2647,7 +2759,7 @@ function guardarCarritoLocal() {
   if (!cart.length) { localStorage.removeItem(CARRITO_LOCAL_KEY); return; }
   try {
     localStorage.setItem(CARRITO_LOCAL_KEY, JSON.stringify({
-      cart, datosEntrega, checkoutStep, propinaSeleccionada, regaloActivo, recogeEnTienda, gpsCoords, notasEspeciales,
+      cart, datosEntrega, checkoutStep, propinaSeleccionada, regaloActivo, recogeEnTienda, gpsCoords, costoEnvioCalculado, notasEspeciales,
       fecha: Date.now(),
     }));
   } catch (e) { /* si el almacenamiento está lleno o bloqueado, seguimos sin persistencia, sin tronar la app */ }
@@ -2686,6 +2798,7 @@ function restaurarCarritoLocal() {
   regaloActivo = guardado.regaloActivo || false;
   recogeEnTienda = guardado.recogeEnTienda || false;
   gpsCoords = guardado.gpsCoords || null;
+  costoEnvioCalculado = guardado.costoEnvioCalculado || null;
   notasEspeciales = guardado.notasEspeciales || '';
 
   actualizarCartUI();
@@ -2758,7 +2871,7 @@ async function confirmarPedido() {
   const mensajeRegalo = esRegalo ? document.getElementById('inpMensajeRegalo').value.trim() : '';
   const zonaSel = document.getElementById('inpZona');
   const zonaId = recogeEnTienda ? null : (zonaSel ? zonaSel.value || null : null);
-  const costoEnvio = recogeEnTienda ? 0 : (zonaSel && zonaSel.value ? Number(zonaSel.selectedOptions[0].dataset.costo) : 0);
+  const costoEnvio = recogeEnTienda ? 0 : (costoEnvioCalculado ? costoEnvioCalculado.costo : (zonaSel && zonaSel.value ? Number(zonaSel.selectedOptions[0].dataset.costo) : 0));
   const formaPago = document.querySelector('input[name="pago"]:checked').value;
   const propinaChecked = document.querySelector('input[name="propina"]:checked');
   let propina = 0;
@@ -2890,6 +3003,7 @@ async function confirmarPedido() {
     regaloActivo = false;
     recogeEnTienda = false;
     gpsCoords = null;
+    costoEnvioCalculado = null;
     borrarCarritoLocal();
     datosEntrega.nombreDestinatario = '';
     datosEntrega.telefonoDestinatario = '';
@@ -3110,6 +3224,8 @@ document.getElementById('vaciarCarrito').addEventListener('click', () => {
   cart = [];
   regaloActivo = false;
   recogeEnTienda = false;
+  gpsCoords = null;
+  costoEnvioCalculado = null;
   checkoutStep = 0;
   borrarCarritoLocal();
   renderCart(); actualizarCartUI();
@@ -3422,6 +3538,7 @@ document.addEventListener('click', async (e) => {
       <button id="mapaUbicacionCerrarBtn" class="w-8 h-8 rounded-full bg-line/70 flex items-center justify-center text-lg leading-none">&times;</button>
     </div>
     <p class="text-[12.5px] text-muted px-5 pt-3 pb-1">Arrastra el pin 📍 hasta el punto exacto de entrega.</p>
+    <p id="mapaUbicacionPrecision" class="hidden text-[11.5px] text-forest px-5 pb-1 font-medium"></p>
     <div id="mapaUbicacionContenedor" style="height: 320px; width: 100%;"></div>
     <div class="p-4">
       <button id="mapaUbicacionConfirmarBtn" class="w-full btn-gradient text-white font-display font-600 rounded-2xl py-3 text-[14.5px] shadow-sm">Usar esta ubicación</button>
