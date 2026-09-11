@@ -69,6 +69,29 @@
   <input id="loginPass" type="password" placeholder="Contraseña" required class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" />
   <button class="w-full btn-gradient text-white font-display font-600 rounded-xl py-3 text-[14px]">Entrar</button>
   <p id="loginError" class="text-accent text-[13px] text-center hidden">Correo o contraseña incorrectos.</p>
+  <button type="button" id="olvideContrasenaBtn" class="w-full text-center text-[12.5px] text-forest font-medium">¿Olvidaste tu contraseña?</button>
+ </form>
+</div>
+
+<!-- RECUPERAR CONTRASEÑA: paso 1, pedir correo -->
+<div id="recuperarView" class="hidden min-h-screen flex items-center justify-center p-4">
+ <div class="bg-white rounded-3xl p-8 w-full max-w-sm space-y-4 shadow-sm border border-line">
+  <p class="font-display font-700 text-[17px] text-center">Recuperar acceso</p>
+  <p class="text-[13px] text-muted text-center">Te mandamos un link a tu correo para definir una contraseña nueva.</p>
+  <input id="recuperarEmail" type="email" placeholder="Tu correo" required class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" />
+  <button id="recuperarEnviarBtn" class="w-full btn-gradient text-white font-display font-600 rounded-xl py-3 text-[14px]">Enviar link</button>
+  <p id="recuperarMensaje" class="text-[13px] text-center hidden"></p>
+  <button type="button" id="recuperarVolverBtn" class="w-full text-center text-[12.5px] text-muted font-medium">Volver a iniciar sesión</button>
+ </div>
+</div>
+
+<!-- RECUPERAR CONTRASEÑA: paso 2, definir la nueva (se activa sola al llegar del link del correo) -->
+<div id="nuevaContrasenaView" class="hidden min-h-screen flex items-center justify-center p-4">
+ <form id="nuevaContrasenaForm" class="bg-white rounded-3xl p-8 w-full max-w-sm space-y-4 shadow-sm border border-line">
+  <p class="font-display font-700 text-[17px] text-center">Define tu nueva contraseña</p>
+  <input id="nuevaContrasenaInput" type="password" placeholder="Nueva contraseña (mínimo 6 caracteres)" required minlength="6" class="w-full rounded-xl border border-line px-3.5 py-2.5 text-[14px] focus:outline-none focus:border-accent" />
+  <button class="w-full btn-gradient text-white font-display font-600 rounded-xl py-3 text-[14px]">Guardar contraseña</button>
+  <p id="nuevaContrasenaMensaje" class="text-[13px] text-center hidden"></p>
  </form>
 </div>
 
@@ -660,6 +683,13 @@ const CONFIG = {
  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0ZmVndW1hZmNtZ3FtdXhpd3poIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTUzMzQsImV4cCI6MjEwMTg3MTMzNH0.TCgd7FBIHIPcZ3m6pejAPHXhwZPzrd3sC3PQSQXtkjA',
 };
 const DEMO_MODE = !CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL === 'TU_SUPABASE_URL';
+
+// Se llama cada vez que se intenta una acción que escribe datos sin una conexión real a Supabase configurada.
+// Antes se invocaba en 23 lugares distintos sin estar definida — nunca se notó porque en producción DEMO_MODE
+// siempre es false, pero si la conexión llegara a romperse, esto evita que truene con un error críptico.
+function demoBloqueado() {
+  alert('Esta acción necesita una conexión real a Supabase configurada. Verifica CONFIG.SUPABASE_URL y CONFIG.SUPABASE_ANON_KEY.');
+}
 
 // ============================================================
 // NAVEGACIÓN CON EL BOTÓN "ATRÁS" DEL CELULAR
@@ -5253,7 +5283,87 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
  location.reload();
 });
 
+// ---------- RECUPERAR CONTRASEÑA ----------
+document.getElementById('olvideContrasenaBtn').addEventListener('click', () => {
+ document.getElementById('loginView').classList.add('hidden');
+ document.getElementById('recuperarView').classList.remove('hidden');
+});
+document.getElementById('recuperarVolverBtn').addEventListener('click', () => {
+ document.getElementById('recuperarView').classList.add('hidden');
+ document.getElementById('loginView').classList.remove('hidden');
+});
+
+document.getElementById('recuperarEnviarBtn').addEventListener('click', async (e) => {
+ e.preventDefault();
+ if (DEMO_MODE) { demoBloqueado(); return; }
+ const email = document.getElementById('recuperarEmail').value.trim();
+ const msg = document.getElementById('recuperarMensaje');
+ if (!email) return;
+ const btn = document.getElementById('recuperarEnviarBtn');
+ btn.disabled = true; btn.textContent = 'Enviando...';
+ // redirectTo apunta siempre a esta misma página (admin.html), sin depender de la
+ // configuración global de "Site URL" en Supabase, que suele apuntar a la tienda.
+ const { error } = await supabase.auth.resetPasswordForEmail(email, {
+  redirectTo: location.origin + location.pathname,
+ });
+ btn.disabled = false; btn.textContent = 'Enviar link';
+ msg.classList.remove('hidden');
+ if (error) {
+  msg.textContent = 'No se pudo enviar: ' + error.message;
+  msg.className = 'text-[13px] text-center text-accent';
+ } else {
+  msg.textContent = 'Listo — revisa tu correo (y la carpeta de spam) para el link.';
+  msg.className = 'text-[13px] text-center text-forest';
+ }
+});
+
+// Detecta si Supabase nos mandó aquí para definir una contraseña nueva.
+// Doble verificación: el evento PASSWORD_RECOVERY, y por si acaso, el propio
+// hash de la URL — para no depender solo del timing de un evento.
+let enFlujoDeRecuperacion = false;
+function activarPantallaNuevaContrasena() {
+ if (enFlujoDeRecuperacion) return; // evita activarla dos veces si disparan ambas verificaciones
+ enFlujoDeRecuperacion = true;
+ document.getElementById('loginView').classList.add('hidden');
+ document.getElementById('recuperarView').classList.add('hidden');
+ document.getElementById('panelView').classList.add('hidden');
+ document.getElementById('nuevaContrasenaView').classList.remove('hidden');
+}
+if (!DEMO_MODE) {
+ supabase.auth.onAuthStateChange((event) => {
+  if (event === 'PASSWORD_RECOVERY') activarPantallaNuevaContrasena();
+ });
+ if (location.hash.includes('type=recovery') || location.search.includes('type=recovery')) {
+  activarPantallaNuevaContrasena();
+ }
+}
+
+document.getElementById('nuevaContrasenaForm').addEventListener('submit', async (e) => {
+ e.preventDefault();
+ const nueva = document.getElementById('nuevaContrasenaInput').value;
+ const msg = document.getElementById('nuevaContrasenaMensaje');
+ const btn = e.target.querySelector('button[type="submit"], button:not([type])');
+ btn.disabled = true;
+ const { error } = await supabase.auth.updateUser({ password: nueva });
+ btn.disabled = false;
+ msg.classList.remove('hidden');
+ if (error) {
+  msg.textContent = 'No se pudo guardar: ' + error.message;
+  msg.className = 'text-[13px] text-center text-accent';
+  return;
+ }
+ msg.textContent = 'Contraseña actualizada — entrando...';
+ msg.className = 'text-[13px] text-center text-forest';
+ // Cierra la sesión temporal de recuperación y manda a iniciar sesión normal con la contraseña nueva
+ await supabase.auth.signOut();
+ setTimeout(() => {
+  history.replaceState(null, '', location.pathname); // limpia el token de la URL
+  location.reload();
+ }, 1200);
+});
+
 async function checkSession() {
+ if (enFlujoDeRecuperacion) return; // no pisar la pantalla de "nueva contraseña" con el panel normal
  if (DEMO_MODE) {
   mostrarPanel();
   const banner = document.createElement('div');
@@ -5969,6 +6079,52 @@ document.addEventListener('click', (e) => {
   const btn = e.target.closest('.opcionesDisponibilidadBtn');
   if (btn) odAbrirModal(btn.dataset.id, btn.dataset.nombre);
 });
+
+// ---------- CAMBIAR FOTO DE UN PLATILLO YA EXISTENTE ----------
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.cambiarFotoBtn');
+  if (!btn) return;
+  if (DEMO_MODE) { demoBloqueado(); return; }
+  const input = document.querySelector(`.cambiarFotoInput[data-id="${btn.dataset.id}"]`);
+  if (input) input.click();
+});
+
+document.addEventListener('change', async (e) => {
+  const input = e.target.closest('.cambiarFotoInput');
+  if (!input) return;
+  const file = input.files[0];
+  if (!file) return;
+  const productoId = input.dataset.id;
+  const btn = document.querySelector(`.cambiarFotoBtn[data-id="${productoId}"]`);
+
+  try {
+    const nombreArchivo = `platillo-${productoId}-${Date.now()}.jpg`;
+    const { error } = await supabase.storage.from('platillos').upload(nombreArchivo, file, { upsert: true });
+    if (error) { alert('No se pudo subir la foto: ' + error.message); return; }
+    const { data: pub } = supabase.storage.from('platillos').getPublicUrl(nombreArchivo);
+
+    const { error: errUpdate } = await supabase.from('productos').update({ imagen_url: pub.publicUrl }).eq('id', productoId);
+    if (errUpdate) { alert('La foto se subió, pero no se pudo enlazar al platillo: ' + errUpdate.message); return; }
+
+    // Actualiza la miniatura en pantalla al instante, sin recargar toda la lista
+    if (btn) {
+      const img = document.createElement('img');
+      img.src = pub.publicUrl;
+      img.alt = '';
+      img.className = 'w-full h-full object-cover';
+      btn.querySelector('img')?.remove();
+      // si antes mostraba solo una letra (sin <img>), la quitamos también
+      Array.from(btn.childNodes).forEach(n => { if (n.nodeType === 3) n.remove(); });
+      btn.prepend(img);
+    }
+    const prod = menuAdminProductosCache?.find(p => p.id === productoId);
+    if (prod) prod.imagen_url = pub.publicUrl;
+  } catch (err) {
+    alert('Ocurrió un error inesperado: ' + err.message);
+  } finally {
+    input.value = '';
+  }
+});
 document.getElementById('nuevoPlatilloCerrarBtn').addEventListener('click', npPlatilloCerrarModal);
 document.getElementById('nuevoPlatilloOverlay').addEventListener('click', npPlatilloCerrarModal);
 
@@ -6036,7 +6192,11 @@ function productoRowAdminHtml(p, fotoCat) {
  return `
   <div id="prodRow-${p.id}" class="bg-white rounded-2xl border border-line shadow-sm p-3.5 ${!p.disponible ? 'opacity-50' : ''} ${p.descontinuado ? 'opacity-40 grayscale' : ''}">
    <div class="flex items-start gap-2.5 mb-2.5">
-    <span class="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center bg-[#F4F2EE] text-ink font-display font-700 text-[15px] overflow-hidden">${p.imagen_url ? `<img src="${p.imagen_url}" alt="${p.nombre}" class="w-full h-full object-cover" />` : fotoCat ? `<img src="${fotoCat}" alt="${p.nombre}" class="w-full h-full object-cover" />` : p.nombre.charAt(0).toUpperCase()}</span>
+    <button type="button" data-id="${p.id}" title="Tocar para cambiar la foto" class="cambiarFotoBtn relative w-10 h-10 rounded-xl shrink-0 flex items-center justify-center bg-[#F4F2EE] text-ink font-display font-700 text-[15px] overflow-hidden">
+     ${p.imagen_url ? `<img src="${p.imagen_url}" alt="${p.nombre}" class="w-full h-full object-cover" />` : fotoCat ? `<img src="${fotoCat}" alt="${p.nombre}" class="w-full h-full object-cover" />` : p.nombre.charAt(0).toUpperCase()}
+     <span class="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-forest text-white flex items-center justify-center" style="font-size:9px;">📷</span>
+    </button>
+    <input type="file" accept="image/*" data-id="${p.id}" style="display:none" class="cambiarFotoInput" />
     <p class="font-display font-600 text-[14px] leading-snug flex-1 min-w-0">${p.nombre}${p.descontinuado ? ' <span class="text-[10px] font-700 text-accent align-middle">· Descontinuado</span>' : ''}</p>
    </div>
    <div class="flex items-center gap-2 mb-2.5 flex-wrap">
@@ -6506,7 +6666,12 @@ document.getElementById('pushToggleBtn').addEventListener('click', async () => {
 });
 
 if ('serviceWorker' in navigator) {
- navigator.serviceWorker.register('sw.js')
+ // Scope acotado a este archivo: el admin nunca debe compartir el mismo alcance
+ // que el service worker de la tienda (index.html) — evita que se mezclen cachés
+ // o que el navegador confunda cuál "app" debe abrir. El admin no necesita ni
+ // debe funcionar offline (es un panel de datos en vivo); este registro existe
+ // únicamente para poder recibir notificaciones push.
+ navigator.serviceWorker.register('sw.js', { scope: '/admin.html' })
   .then(() => actualizarBotonPush())
   .catch((e) => console.error('No se pudo registrar el service worker:', e));
 }
