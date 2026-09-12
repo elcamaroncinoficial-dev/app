@@ -2505,7 +2505,7 @@ function renderCart() {
   }
 
   const btnSigE = document.getElementById('btnSiguienteEntrega');
-  if (btnSigE) btnSigE.addEventListener('click', () => {
+  if (btnSigE) btnSigE.addEventListener('click', async () => {
     const nombre = document.getElementById('inpNombre').value.trim();
     const telefono = document.getElementById('inpTelefono').value.trim();
     const direccion = recogeEnTienda ? 'Recoge en tienda' : document.getElementById('inpDireccion').value.trim();
@@ -2516,6 +2516,30 @@ function renderCart() {
       if (!nd || !td) { toast('Falta el nombre o teléfono de quien va a recibir el regalo.', 'error'); return; }
     }
     if (!nombre || !telefono || !direccion) { toast('Falta tu nombre, tu teléfono o la dirección de entrega.', 'error'); return; }
+
+    // Si escribió su dirección a mano (sin usar el mapa), intentamos geocodificar ese texto
+    // para aplicar el mismo cálculo automático por distancia — así el envío se calcula solo
+    // sin importar cómo haya dado su dirección, no solo cuando usa el pin del mapa.
+    if (!recogeEnTienda && !costoEnvioCalculado) {
+      const textoOriginal = btnSigE.textContent;
+      btnSigE.disabled = true;
+      btnSigE.textContent = 'Calculando envío...';
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(direccion)}&format=json&limit=1&countrycodes=mx`);
+        const data = await resp.json();
+        if (data && data[0]) {
+          const lat = Number(data[0].lat), lng = Number(data[0].lon);
+          const negocio = await obtenerUbicacionNegocio();
+          const km = calcularDistanciaKm(lat, lng, negocio.lat, negocio.lng);
+          costoEnvioCalculado = { km, costo: calcularCostoEnvioPorDistancia(km) };
+          actualizarBloqueEnvioCalculado();
+          guardarCarritoLocal();
+        }
+      } catch (e) { /* sin internet o no se pudo ubicar el texto — sigue disponible el selector manual de zona */ }
+      btnSigE.disabled = false;
+      btnSigE.textContent = textoOriginal;
+    }
+
     irAPasoCheckout(2);
     pushNavState();
   });
