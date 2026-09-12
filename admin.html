@@ -380,6 +380,33 @@
    </div>
   </div>
 
+   <div class="bg-white rounded-2xl border border-line shadow-sm p-4 mb-6">
+    <div class="flex items-center justify-between mb-3">
+     <div class="flex items-center gap-3">
+      <span class="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0 text-[18px]">🦐</span>
+      <div>
+       <p class="font-display font-600 text-[14px]">Programa de lealtad</p>
+       <p class="text-[12px] text-muted mt-0.5">Apagar esto oculta el ícono de camaroncitos en toda la tienda</p>
+      </div>
+     </div>
+     <label class="relative inline-flex items-center cursor-pointer shrink-0">
+      <input type="checkbox" id="lealtadActivaCheck" class="sr-only peer" />
+      <div class="w-10 h-6 bg-line rounded-full peer peer-checked:bg-forest transition-colors"></div>
+      <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+     </label>
+    </div>
+    <div class="mb-2">
+     <label class="block text-[11px] text-muted mb-1">Cada cuántos pesos gastados en un pedido se gana 1 punto</label>
+     <div class="flex items-center gap-2">
+      <span class="text-[14px] text-muted">$</span>
+      <input id="lealtadMontoInput" type="number" step="1" class="w-28 rounded-xl border border-line px-3 py-2 text-[13.5px]" />
+      <button id="lealtadGuardarConfigBtn" class="bg-forest text-white font-display font-600 text-[12.5px] rounded-full px-4 py-2">Guardar</button>
+     </div>
+    </div>
+    <p class="text-[12px] font-display font-600 text-muted uppercase tracking-wide mt-4 mb-2">Premios (hasta 4)</p>
+    <div id="premiosLealtadGaleria" class="space-y-3"></div>
+   </div>
+
    <div id="premiosPendientesWrap" class="mb-6"></div>
 
    <div class="flex items-center justify-between mb-3">
@@ -544,21 +571,21 @@
       <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">3</span>
       <div>
        <p class="font-display font-600 text-[13.5px] text-ink">Explora categorías</p>
-       <p class="text-[12.5px] text-muted mt-0.5">Entradas, Tacos y empanadas, Sopas, Barra fría, Platos fuertes, Especialidades, De la tierra, Pequeños navegantes, Extra, Bebidas y Postre. El menú (☰) también deja ver el directorio completo y saltar directo a un platillo.</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Combos, Entradas, Tacos y empanadas, Sopas, Barra fría, Platos fuertes, Especialidades, De la tierra, Pequeños navegantes, Extra, Bebidas y Postre. El menú (☰) también deja ver el directorio completo y saltar directo a un platillo.</p>
       </div>
      </div>
      <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
       <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">4</span>
       <div>
        <p class="font-display font-600 text-[13.5px] text-ink">Elige un platillo</p>
-       <p class="text-[12.5px] text-muted mt-0.5">Se abre un modal que le pide, en orden: cantidad (si aplica) → lo obligatorio (proteína, tamaño) → lo opcional gratis (cómo lo quiere preparado) → lo opcional con costo (extras).</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Se abre un modal que le pide, en orden: cantidad (si aplica) → lo obligatorio (proteína, tamaño) → lo opcional gratis (cómo lo quiere preparado, o qué ingredientes quitar) → lo opcional con costo (extras). Puede tocar el corazón para guardarlo en sus favoritos manuales, aunque nunca lo haya pedido.</p>
       </div>
      </div>
      <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
       <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">5</span>
       <div>
        <p class="font-display font-600 text-[13.5px] text-ink">Agrega al carrito</p>
-       <p class="text-[12.5px] text-muted mt-0.5">Puede seguir agregando más platillos, ver sus favoritos frecuentes o repetir un pedido anterior desde "Mis Pedidos".</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Puede seguir agregando más platillos, ver "Mis Pedidos" (favoritos marcados a mano, favoritos por frecuencia de pedido, y su historial completo) o repetir un pedido anterior con un toque.</p>
       </div>
      </div>
      <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
@@ -572,7 +599,7 @@
       <span class="w-7 h-7 rounded-full btn-gradient text-white flex items-center justify-center text-[12.5px] font-display font-700 shrink-0">7</span>
       <div>
        <p class="font-display font-600 text-[13.5px] text-ink">Confirma y paga</p>
-       <p class="text-[12.5px] text-muted mt-0.5">Llena nombre, teléfono y dirección de entrega (o usa su ubicación GPS, o una guardada en su libreta). Elige efectivo o transferencia.</p>
+       <p class="text-[12.5px] text-muted mt-0.5">Elige recoger en tienda, o entrega a domicilio: marca su ubicación en el mapa (el costo de envío se calcula solo, según la distancia real a tu negocio) o escribe su dirección a mano. Elige efectivo o transferencia. Si tu tienda está marcada como cerrada, igual puede dejar su pedido — queda etiquetado como "fuera de horario" para que lo veas al abrir.</p>
       </div>
      </div>
      <div class="flex items-start gap-3 bg-white rounded-2xl border border-line p-3.5 shadow-sm">
@@ -598,7 +625,7 @@
     <div class="grid sm:grid-cols-2 gap-3 mt-3">
      <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
       <p class="font-display font-600 text-[13.5px] text-forest">Pedidos</p>
-      <p class="text-[12.5px] text-muted mt-0.5">Todos los pedidos que van llegando en vivo. Cambia su estatus conforme los vas preparando y entregando.</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Todos los pedidos que van llegando en vivo. Cambia su estatus conforme los vas preparando y entregando, selecciona varios con las casillas para borrarlos de un jalón, y fíjate en la etiqueta naranja "⏰ Fuera de horario" en los que llegaron con la tienda cerrada.</p>
      </div>
      <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
       <p class="font-display font-600 text-[13.5px] text-forest">Métricas</p>
@@ -606,7 +633,7 @@
      </div>
      <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
       <p class="font-display font-600 text-[13.5px] text-forest">Menú</p>
-      <p class="text-[12.5px] text-muted mt-0.5">Abre/cierra la tienda, configura el banner promocional, revisa premios de lealtad pendientes de entregar, y administra cada platillo: agotado del día, destacado, precio, costo, y zonas de entrega con su costo de envío.</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Abre/cierra la tienda, configura tu galería de promociones (elige cuál se muestra), administra tu programa de lealtad completo (encender/apagar, regla de puntos, hasta 4 premios con foto propia), revisa premios pendientes de entregar, y administra cada platillo: foto (toca la miniatura para cambiarla), agotado del día, destacado, precio, costo, o agrega uno nuevo. También zonas de entrega con su costo fijo, de respaldo para cuando el cliente no usa el mapa.</p>
      </div>
      <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
       <p class="font-display font-600 text-[13.5px] text-forest">Costos</p>
@@ -629,8 +656,8 @@
       <p class="text-[12.5px] text-ink/80">Para cuando se te acabó el insumo por hoy, pero el platillo sigue siendo parte de tu carta. El cliente lo sigue viendo en el menú, pero no lo puede pedir. Actívalo de nuevo mañana.</p>
      </div>
      <div class="bg-white rounded-2xl border border-line p-4">
-      <p class="font-display font-700 text-[14px] text-accent mb-1">Ícono de bote de basura — "Descontinuar"</p>
-      <p class="text-[12.5px] text-ink/80">Para cuando un platillo ya no es parte de tu carta (de plano, no solo por hoy). Desaparece por completo del menú del cliente — no se ve, no sale en el buscador, ni en favoritos. Se puede reactivar después desde el mismo botón sin perder su historial.</p>
+      <p class="font-display font-700 text-[14px] text-accent mb-1">Botón "Descontinuar" / "Reactivar"</p>
+      <p class="text-[12.5px] text-ink/80">Para cuando un platillo ya no es parte de tu carta (de plano, no solo por hoy). Desaparece por completo del menú del cliente — no se ve, no sale en el buscador, ni en favoritos. El mismo botón cambia a "Reactivar" (verde, con palomita) cuando ya está descontinuado — tócalo para traerlo de vuelta sin perder su historial.</p>
      </div>
     </div>
    </div>
@@ -641,19 +668,27 @@
     <div class="space-y-2 mt-3">
      <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
       <p class="font-display font-600 text-[13.5px] text-ink">No me llegó la notificación de un pedido nuevo</p>
-      <p class="text-[12.5px] text-muted mt-0.5">El canal garantizado es WhatsApp: cada pedido siempre se manda ahí sin importar nada más. Las notificaciones push del navegador son un aviso adicional; revisa periódicamente la pestaña "Pedidos" mientras confirmas que el push esté bien configurado en tu celular.</p>
+      <p class="text-[12.5px] text-muted mt-0.5">El canal garantizado es WhatsApp: cada pedido siempre se manda ahí sin importar nada más. Las notificaciones push del navegador son un aviso adicional — nunca están 100% garantizadas (así funcionan en cualquier app, no solo aquí), y la primera después de un rato sin pedidos puede tardar de más. Revisa periódicamente la pestaña "Pedidos" mientras tanto.</p>
      </div>
      <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
       <p class="font-display font-600 text-[13.5px] text-ink">Un cliente dice que no puede pedir cierto platillo</p>
-      <p class="text-[12.5px] text-muted mt-0.5">Revisa en la pestaña Menú si quedó marcado como "agotado" (interruptor verde apagado) o "descontinuado" (ver sección de arriba) por accidente.</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Revisa en la pestaña Menú si quedó marcado como "agotado" (interruptor verde apagado) o "descontinuado" (ver sección de arriba) por accidente. Si es una variante específica (ej. un tamaño), revisa el botón de disponibilidad de esa variante.</p>
      </div>
      <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
       <p class="font-display font-600 text-[13.5px] text-ink">Cambié el precio de un platillo y no se refleja</p>
       <p class="text-[12.5px] text-muted mt-0.5">Verifica que le diste clic fuera del campo de precio para que se guarde el cambio — se guarda automáticamente al perder el foco, no hace falta un botón aparte.</p>
      </div>
      <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
-      <p class="font-display font-600 text-[13.5px] text-ink">Quiero agregar un platillo nuevo que no existe todavía</p>
-      <p class="text-[12.5px] text-muted mt-0.5">Hoy el panel solo permite editar platillos existentes. Para dar de alta uno nuevo, pídelo directamente para que se agregue en la base de datos.</p>
+      <p class="font-display font-600 text-[13.5px] text-ink">Quiero agregar un platillo nuevo</p>
+      <p class="text-[12.5px] text-muted mt-0.5">Botón "Agregar platillo" arriba de la lista, en la pestaña Menú — sube su foto, nombre, categoría, precio y descripción directo tú mismo. Si necesita opciones para elegir (tamaño, sabor, etc.), pídelo aparte para configurarlas.</p>
+     </div>
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-ink">Se me olvidó mi contraseña</p>
+      <p class="text-[12.5px] text-muted mt-0.5">En la pantalla de inicio de sesión, toca "¿Olvidaste tu contraseña?" — te llega un link a tu correo para definir una nueva.</p>
+     </div>
+     <div class="bg-white rounded-2xl border border-line p-3.5 shadow-sm">
+      <p class="font-display font-600 text-[13.5px] text-ink">¿Cómo respaldo mi información?</p>
+      <p class="text-[12.5px] text-muted mt-0.5">El plan gratuito de Supabase no incluye respaldo automático. Puedes exportar cualquier tabla tú mismo desde el Dashboard de Supabase (Table Editor → los tres puntos junto al nombre de la tabla → "Export table as CSV"), o pedirle a tu desarrollador un respaldo completo de vez en cuando.</p>
      </div>
     </div>
    </div>
@@ -683,6 +718,12 @@ const CONFIG = {
  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0ZmVndW1hZmNtZ3FtdXhpd3poIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTUzMzQsImV4cCI6MjEwMTg3MTMzNH0.TCgd7FBIHIPcZ3m6pejAPHXhwZPzrd3sC3PQSQXtkjA',
 };
 const DEMO_MODE = !CONFIG.SUPABASE_URL || CONFIG.SUPABASE_URL === 'TU_SUPABASE_URL';
+
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
 
 // Se llama cada vez que se intenta una acción que escribe datos sin una conexión real a Supabase configurada.
 // Antes se invocaba en 23 lugares distintos sin estar definida — nunca se notó porque en producción DEMO_MODE
@@ -5614,7 +5655,7 @@ function renderPedidos(pedidos) {
     <div class="flex items-start gap-2.5">
      <input type="checkbox" class="pedidoCheckbox mt-1 w-4 h-4 rounded border-line shrink-0" data-id="${p.id}" ${pedidosSeleccionados.has(p.id) ? 'checked' : ''} />
      <div>
-      <p class="font-display font-600 text-[14.5px]">#${p.folio} — ${p.nombre_cliente}</p>
+      <p class="font-display font-600 text-[14.5px]">#${p.folio} — ${p.nombre_cliente} ${p.fuera_de_horario ? '<span class="inline-block bg-accent/15 text-accent text-[10.5px] font-700 rounded-full px-2 py-0.5 align-middle ml-1">⏰ Fuera de horario</span>' : ''}</p>
       <p class="text-[12px] text-muted mt-0.5">${new Date(p.created_at).toLocaleString('es-MX')} · ${p.telefono}</p>
      </div>
     </div>
@@ -5640,15 +5681,20 @@ function renderPedidos(pedidos) {
    const nextStatus = btn.dataset.next;
    const pedidoId = btn.dataset.id;
    if (nextStatus === 'entregado') {
+    const { data: config } = await supabase.from('configuracion').select('lealtad_activa, lealtad_monto_por_punto').eq('id', 1).maybeSingle();
+    const lealtadActiva = config ? config.lealtad_activa : true;
+    const montoPorPunto = config ? Number(config.lealtad_monto_por_punto) : 250;
     const { data: pedido } = await supabase.from('pedidos').select('total, cliente_id').eq('id', pedidoId).single();
-    if (pedido && pedido.cliente_id && Number(pedido.total) >= 250) {
-     const { data: cliente } = await supabase.from('clientes').select('camaroncitos, ultima_visita_contada').eq('id', pedido.cliente_id).single();
+    if (lealtadActiva && pedido && pedido.cliente_id && Number(pedido.total) >= montoPorPunto) {
+     const { data: cliente } = await supabase.from('clientes').select('camaroncitos, ultima_visita_contada, ultimo_premio_canjeado').eq('id', pedido.cliente_id).single();
      const hoy = new Date().toISOString().slice(0, 10);
      if (cliente && cliente.ultima_visita_contada !== hoy) {
       const nuevo = (cliente.camaroncitos || 0) + 1;
-      let premio = null;
-      if (nuevo === 5) premio = '5';
-      if (nuevo >= 10) premio = '10';
+      // Buscamos el premio activo de mayor umbral que ya se alcanzó y todavía no se ha canjeado —
+      // así funciona con cualquier cantidad de premios y en cualquier umbral, no solo 5 y 10 fijos.
+      const { data: premiosActivos } = await supabase.from('premios_lealtad').select('puntos_necesarios').eq('activo', true).order('puntos_necesarios', { ascending: false });
+      const premioAlcanzado = (premiosActivos || []).find(p => nuevo >= p.puntos_necesarios && p.puntos_necesarios > (cliente.ultimo_premio_canjeado || 0));
+      const premio = premioAlcanzado ? String(premioAlcanzado.puntos_necesarios) : null;
       await supabase.from('clientes').update({ camaroncitos: nuevo, premio_disponible: premio, ultima_visita_contada: hoy }).eq('id', pedido.cliente_id);
      }
     }
@@ -5803,6 +5849,8 @@ async function cargarMenuAdmin() {
   supabase.from('clientes').select('*').not('premio_disponible', 'is', null),
  ]);
  renderTiendaToggle(config);
+ renderLealtadConfig(config);
+ cargarPremiosLealtad();
  renderPremiosPendientes(premios || []);
  renderMenuAdminList(cats || [], prods || []);
  renderZonas(zonas || []);
@@ -5933,6 +5981,119 @@ document.getElementById('promoModalGuardarBtn').addEventListener('click', async 
  cargarPromoGaleria();
 });
 
+function renderLealtadConfig(config) {
+ document.getElementById('lealtadActivaCheck').checked = !!(config && config.lealtad_activa);
+ document.getElementById('lealtadMontoInput').value = (config && config.lealtad_monto_por_punto) || 250;
+}
+
+document.getElementById('lealtadActivaCheck').addEventListener('change', async (e) => {
+ if (DEMO_MODE) { demoBloqueado(); return; }
+ await supabase.from('configuracion').update({ lealtad_activa: e.target.checked }).eq('id', 1);
+});
+
+document.getElementById('lealtadGuardarConfigBtn').addEventListener('click', async () => {
+ if (DEMO_MODE) { demoBloqueado(); return; }
+ const monto = Number(document.getElementById('lealtadMontoInput').value) || 250;
+ const btn = document.getElementById('lealtadGuardarConfigBtn');
+ btn.disabled = true; btn.textContent = 'Guardando...';
+ const { error } = await supabase.from('configuracion').update({ lealtad_monto_por_punto: monto }).eq('id', 1);
+ btn.disabled = false; btn.textContent = 'Guardar';
+ if (error) { alert('No se pudo guardar: ' + error.message); return; }
+ toast_admin('Guardado ✓');
+});
+
+// Pequeño helper de confirmación visual reutilizable (evita depender de alert() para algo tan frecuente)
+function toast_admin(msg) {
+ const btn = document.getElementById('lealtadGuardarConfigBtn');
+ if (!btn) return;
+ const original = btn.textContent;
+ btn.textContent = msg;
+ setTimeout(() => { btn.textContent = original; }, 1200);
+}
+
+let premiosLealtadCache = [];
+
+async function cargarPremiosLealtad() {
+ if (DEMO_MODE) { document.getElementById('premiosLealtadGaleria').innerHTML = `<p class="text-[12.5px] text-muted">No disponible en modo demo.</p>`; return; }
+ const { data, error } = await supabase.from('premios_lealtad').select('*').order('slot');
+ if (error) { document.getElementById('premiosLealtadGaleria').innerHTML = `<p class="text-[12.5px] text-accent">Error al cargar: ${error.message}</p>`; return; }
+ // Aseguramos que existan los 4 slots, aunque todavía no se hayan configurado
+ const existentes = data || [];
+ premiosLealtadCache = [1, 2, 3, 4].map(slot => existentes.find(p => p.slot === slot) || { slot, puntos_necesarios: slot * 5, nombre: '', descripcion: '', imagen_url: null, activo: false });
+ renderPremiosLealtadGaleria();
+}
+
+function renderPremiosLealtadGaleria() {
+ const el = document.getElementById('premiosLealtadGaleria');
+ el.innerHTML = premiosLealtadCache.map(p => `
+  <div class="bg-cream rounded-xl p-3 flex items-start gap-3">
+   <button type="button" data-slot="${p.slot}" class="premioFotoBtn relative w-14 h-14 rounded-lg shrink-0 bg-white border border-line flex items-center justify-center overflow-hidden text-muted text-[10px] text-center">
+    ${p.imagen_url ? `<img src="${p.imagen_url}" class="w-full h-full object-cover" />` : 'Sin foto'}
+    <span class="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-forest text-white flex items-center justify-center" style="font-size:9px;">📷</span>
+   </button>
+   <input type="file" accept="image/*" data-slot="${p.slot}" style="display:none" class="premioFotoInput" />
+   <div class="flex-1 min-w-0 space-y-1.5">
+    <div class="flex gap-1.5">
+     <input data-slot="${p.slot}" data-campo="nombre" value="${escapeHtml(p.nombre || '')}" placeholder="Nombre del premio" class="premioCampo flex-1 min-w-0 rounded-lg border border-line px-2 py-1.5 text-[12.5px]" />
+     <input data-slot="${p.slot}" data-campo="puntos_necesarios" type="number" value="${p.puntos_necesarios}" placeholder="Puntos" class="premioCampo w-16 rounded-lg border border-line px-2 py-1.5 text-[12.5px]" />
+    </div>
+    <textarea data-slot="${p.slot}" data-campo="descripcion" rows="1" placeholder="Descripción breve" class="premioCampo w-full rounded-lg border border-line px-2 py-1.5 text-[12px] resize-none">${escapeHtml(p.descripcion || '')}</textarea>
+    <div class="flex items-center justify-between">
+     <label class="flex items-center gap-1.5 text-[11.5px] text-muted">
+      <input type="checkbox" data-slot="${p.slot}" class="premioActivoCheck" ${p.activo ? 'checked' : ''} />
+      Activo
+     </label>
+     <button data-slot="${p.slot}" class="premioGuardarBtn text-[11.5px] font-display font-600 text-forest">Guardar</button>
+    </div>
+   </div>
+  </div>
+ `).join('');
+
+ el.querySelectorAll('.premioFotoBtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+   if (DEMO_MODE) { demoBloqueado(); return; }
+   el.querySelector(`.premioFotoInput[data-slot="${btn.dataset.slot}"]`).click();
+  });
+ });
+
+ el.querySelectorAll('.premioFotoInput').forEach(input => {
+  input.addEventListener('change', async (e) => {
+   const file = e.target.files[0];
+   if (!file) return;
+   const slot = input.dataset.slot;
+   const nombreArchivo = `premio-slot${slot}-${Date.now()}.jpg`;
+   const { error } = await supabase.storage.from('platillos').upload(nombreArchivo, file, { upsert: true });
+   if (error) { alert('No se pudo subir la foto: ' + error.message); return; }
+   const { data: pub } = supabase.storage.from('platillos').getPublicUrl(nombreArchivo);
+   const premio = premiosLealtadCache.find(p => p.slot == slot);
+   premio.imagen_url = pub.publicUrl;
+   const { error: errUpsert } = await supabase.from('premios_lealtad').upsert({ ...premio }, { onConflict: 'slot' });
+   if (errUpsert) { alert('No se pudo guardar: ' + errUpsert.message); return; }
+   renderPremiosLealtadGaleria();
+  });
+ });
+
+ el.querySelectorAll('.premioGuardarBtn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+   if (DEMO_MODE) { demoBloqueado(); return; }
+   const slot = Number(btn.dataset.slot);
+   const premio = premiosLealtadCache.find(p => p.slot === slot);
+   const nombre = el.querySelector(`.premioCampo[data-slot="${slot}"][data-campo="nombre"]`).value.trim();
+   const puntos = Number(el.querySelector(`.premioCampo[data-slot="${slot}"][data-campo="puntos_necesarios"]`).value) || 5;
+   const descripcion = el.querySelector(`.premioCampo[data-slot="${slot}"][data-campo="descripcion"]`).value.trim();
+   const activo = el.querySelector(`.premioActivoCheck[data-slot="${slot}"]`).checked;
+   btn.disabled = true; btn.textContent = 'Guardando...';
+   const { error } = await supabase.from('premios_lealtad').upsert({
+    slot, nombre, puntos_necesarios: puntos, descripcion, imagen_url: premio.imagen_url, activo,
+   }, { onConflict: 'slot' });
+   btn.disabled = false; btn.textContent = 'Guardado ✓';
+   setTimeout(() => { btn.textContent = 'Guardar'; }, 1200);
+   if (error) { alert('No se pudo guardar: ' + error.message); return; }
+   Object.assign(premio, { nombre, puntos_necesarios: puntos, descripcion, activo });
+  });
+ });
+}
+
 function renderPremiosPendientes(clientes) {
  const wrap = document.getElementById('premiosPendientesWrap');
  if (!clientes.length) { wrap.innerHTML = ''; return; }
@@ -5955,8 +6116,9 @@ function renderPremiosPendientes(clientes) {
  document.querySelectorAll('.canjearPremioBtn').forEach(btn => {
   btn.addEventListener('click', async () => {
    if (DEMO_MODE) { demoBloqueado(); return; }
-   const updates = { premio_disponible: null };
-   if (btn.dataset.premio === '10') updates.camaroncitos = 0;
+   // Cumulativo: no reseteamos camaroncitos a 0 — solo marcamos hasta dónde ya se canjeó,
+   // así el cliente sigue acumulando hacia el siguiente premio sin importar cuántos umbrales tengas.
+   const updates = { premio_disponible: null, ultimo_premio_canjeado: Number(btn.dataset.premio) };
    await supabase.from('clientes').update(updates).eq('id', btn.dataset.id);
    cargarMenuAdmin();
   });

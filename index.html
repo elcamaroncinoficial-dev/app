@@ -209,6 +209,8 @@
   <span data-icon="soup"><svg viewBox="0 0 24 24" fill="none"><path d="M3 12h18c0 4-3.5 7-9 7s-9-3-9-7z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 12c0-2 1-3 1-4.5S8 5 8 5M12 12c0-2 1-3 1-4.5S12 5 12 5M16 12c0-2 1-3 1-4.5S16 5 16 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
   <span data-icon="shell"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4c4.5 1.5 8 6 8 11 0 1-1 1.5-2 1-1.5-1-3.5-1.5-6-1.5s-4.5.5-6 1.5c-1 .5-2 0-2-1 0-5 3.5-9.5 8-11z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 6v10M9 7.5l1 8.5M15 7.5l-1 8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
   <span data-icon="star"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5.5L20 9.5l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-1L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
+  <span data-icon="heart-outline"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20.5s-7.5-4.6-10-9.3C.4 8.1 2 4.5 5.5 4c2-.3 3.7.7 4.9 2.3l1.6 2.1 1.6-2.1C14.8 4.7 16.5 3.7 18.5 4c3.5.5 5.1 4.1 3.5 7.2-2.5 4.7-10 9.3-10 9.3z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+  <span data-icon="heart-filled"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-7.5-4.6-10-9.3C.4 8.1 2 4.5 5.5 4c2-.3 3.7.7 4.9 2.3l1.6 2.1 1.6-2.1C14.8 4.7 16.5 3.7 18.5 4c3.5.5 5.1 4.1 3.5 7.2-2.5 4.7-10 9.3-10 9.3z"/></svg></span>
   <span data-icon="land"><svg viewBox="0 0 24 24" fill="none"><path d="M4 17c0-4 3-8 8-8s8 4 8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 17v2M17 17v2M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9V6M15 9V6M9 6c0-1.5 1-2.5 2-2.5M15 6c0-1.5-1-2.5-2-2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
   <span data-icon="plus"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
   <span data-icon="cutlery"><svg viewBox="0 0 24 24" fill="none"><path d="M6 2v7a2 2 0 002 2v11M6 2v7M9 2v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 2c-1.5 0-3 1.5-3 4v4c0 1 .5 2 1.5 2V22M17 2v20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -696,10 +698,36 @@ let checkoutStep = 0; // 0=Tu pedido, 1=Datos de entrega, 2=Pago y confirmación
 let datosEntrega = { nombre: '', telefono: '', direccion: '', nombreDestinatario: '', telefonoDestinatario: '', mensajeRegalo: '' };
 let irAPasoCheckoutRef = null; // referencia a la función interna de renderCart(), para que el botón "atrás" del celular pueda usarla
 let promoActivaActual = null; // la promoción marcada como activa en la galería del admin, si el interruptor maestro está encendido
+
+// ============================================================
+// FAVORITOS MANUALES (corazón) — distintos de "favoritos por historial de pedidos"
+// ============================================================
+let favoritosManuales = [];
+try { favoritosManuales = JSON.parse(localStorage.getItem('camaroncin_favoritos_manuales') || '[]'); } catch { favoritosManuales = []; }
+
+function esFavoritoManual(id) { return favoritosManuales.includes(id); }
+
+function toggleFavoritoManual(id) {
+  if (favoritosManuales.includes(id)) {
+    favoritosManuales = favoritosManuales.filter(x => x !== id);
+  } else {
+    favoritosManuales.push(id);
+  }
+  localStorage.setItem('camaroncin_favoritos_manuales', JSON.stringify(favoritosManuales));
+  document.querySelectorAll(`.favoritoHeartBtn[data-id="${id}"]`).forEach(el => {
+    el.innerHTML = icon(esFavoritoManual(id) ? 'heart-filled' : 'heart-outline');
+    el.classList.toggle('text-accent', esFavoritoManual(id));
+    el.classList.toggle('text-white', !esFavoritoManual(id));
+  });
+}
+
 const CARRITO_LOCAL_KEY = 'carritoEnProgreso';
 const CARRITO_LOCAL_MAX_HORAS = 48; // pasado este tiempo, ya no se restaura solo (evita reaparecer un pedido de hace días)
 let perfilUsuario = null; // {apodo, telefono} — se guarda local (y en Supabase cuando hay backend real) la primera vez
 let TIENDA_ABIERTA = true;
+let LEALTAD_ACTIVA = true;
+let LEALTAD_MONTO_POR_PUNTO = 250;
+let PREMIOS_LEALTAD = [];
 let searchTerm = '';
 
 const fmt = (n) => '$' + Number(n).toFixed(2);
@@ -749,7 +777,7 @@ async function cargarMenu() {
     return;
   }
 
-  const [{ data: cats }, { data: prods }, { data: grupos }, { data: opciones }, { data: pg }, { data: zonas }, { data: config }, { data: promoActivaRow }] = await Promise.all([
+  const [{ data: cats }, { data: prods }, { data: grupos }, { data: opciones }, { data: pg }, { data: zonas }, { data: config }, { data: promoActivaRow }, { data: premiosLealtad }] = await Promise.all([
     supabase.from('categorias').select('*').order('orden'),
     supabase.from('productos').select('id, categoria_id, nombre, descripcion, precio_base, imagen_url, disponible, orden, subcategoria, destacado').eq('descontinuado', false).order('orden'),
     supabase.from('grupos').select('*'),
@@ -758,6 +786,7 @@ async function cargarMenu() {
     supabase.from('zonas').select('*').eq('activa', true),
     supabase.from('configuracion').select('*').eq('id', 1).maybeSingle(),
     supabase.from('promociones').select('*').eq('activa', true).maybeSingle(),
+    supabase.from('premios_lealtad').select('*').eq('activo', true).order('puntos_necesarios'),
   ]);
 
   CATEGORIAS = cats || [];
@@ -765,6 +794,10 @@ async function cargarMenu() {
   ZONAS = zonas || [];
   TIENDA_ABIERTA = config ? config.tienda_abierta : true;
   promoActivaActual = (config && config.promo_activa) ? (promoActivaRow || null) : null;
+  LEALTAD_ACTIVA = config ? config.lealtad_activa !== false : true;
+  LEALTAD_MONTO_POR_PUNTO = config ? Number(config.lealtad_monto_por_punto || 250) : 250;
+  PREMIOS_LEALTAD = premiosLealtad || [];
+  document.querySelectorAll('.camaroncitosBtnAll').forEach(btn => btn.classList.toggle('hidden', !LEALTAD_ACTIVA));
 
   GRUPOS = {};
   (grupos || []).forEach(g => GRUPOS[g.id] = { ...g, opciones: [] });
@@ -784,11 +817,10 @@ async function cargarMenu() {
 
   const banner = document.getElementById('closedBanner');
   if (!TIENDA_ABIERTA) {
-    banner.innerHTML = `<span class="inline-flex items-center justify-center gap-1.5"><span class="w-[13px] h-[13px] inline-block" data-icon-slot="lock"></span> ${escapeHtml(config?.mensaje_cerrado || 'Por hoy ya no estamos tomando pedidos.')}</span>`;
+    banner.innerHTML = `<span class="inline-flex items-center justify-center gap-1.5"><span class="w-[13px] h-[13px] inline-block" data-icon-slot="lock"></span> ${escapeHtml(config?.mensaje_cerrado || 'Estamos cerrados por ahora — puedes dejar tu pedido programado y lo preparamos en cuanto abramos.')}</span>`;
     banner.querySelectorAll('[data-icon-slot]').forEach(el => { el.innerHTML = icon(el.dataset.iconSlot); });
     banner.classList.remove('hidden');
-    document.querySelectorAll('.cartBtnAll').forEach(b => b.classList.add('hidden'));
-    document.getElementById('storeStatus').textContent = 'Cerrado por hoy';
+    document.getElementById('storeStatus').textContent = 'Cerrado por ahora — pedidos programados disponibles';
   } else {
     document.getElementById('storeStatus').textContent = `${PRODUCTOS.length} platillos disponibles hoy`;
   }
@@ -865,7 +897,7 @@ function cerrarPromoManual() {
 function mostrarBotonRepetir() {
   const box = document.getElementById('repeatBox');
   const raw = localStorage.getItem('ultimoPedido');
-  if (!raw || !TIENDA_ABIERTA) { box.classList.add('hidden'); return; }
+  if (!raw) { box.classList.add('hidden'); return; }
   let data;
   try { data = JSON.parse(raw); } catch { box.classList.add('hidden'); return; }
   if (!data.items?.length) { box.classList.add('hidden'); return; }
@@ -948,21 +980,52 @@ function calcularFavoritos(historial) {
 function renderMisPedidos() {
   const body = document.getElementById('misPedidosBody');
   const historial = leerHistorialPedidos();
+
+  // ---------- Sección 1: Mis favoritos (manual, con corazón) ----------
+  const favManuales = favoritosManuales.map(id => PRODUCTOS.find(p => p.id === id)).filter(Boolean);
+  const favManualesHtml = favManuales.length ? `
+    <div class="mb-5">
+      <p class="font-display font-600 text-[12.5px] text-muted uppercase tracking-wide mb-2">Mis favoritos ❤️</p>
+      <div class="space-y-2">
+        ${favManuales.map(p => `
+          <button class="favoritoBtn w-full flex items-center gap-3 bg-white border border-line rounded-2xl px-3.5 py-2.5 text-left" data-prod-id="${p.id}">
+            <span class="w-8 h-8 rounded-full bg-cream flex items-center justify-center shrink-0 text-accent">
+              ${icon('heart-filled')}
+            </span>
+            <span class="flex-1 min-w-0">
+              <span class="block text-[13px] text-ink truncate">${escapeHtml(p.nombre)}</span>
+            </span>
+            <span class="text-[11px] font-display font-600 text-forest shrink-0">Pedir →</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+    <div class="ornament-divider mb-4"></div>
+  ` : '';
+
   if (!historial.length) {
-    body.innerHTML = `
+    body.innerHTML = favManualesHtml + `
       <div class="text-center py-16">
         <p class="text-[36px] mb-2">🦐</p>
         <p class="font-display font-600 text-[15px] text-ink mb-1">Aún no tienes pedidos aquí</p>
         <p class="text-[12.5px] text-muted px-6">Tus pedidos hechos desde este celular aparecerán en esta lista.</p>
       </div>
     `;
+    body.querySelectorAll('.favoritoBtn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const prodId = btn.dataset.prodId;
+        cerrarMisPedidos();
+        setTimeout(() => abrirProducto(prodId), 200);
+      });
+    });
     return;
   }
 
+  // ---------- Sección 2: Favoritos histórico (automático, por frecuencia de pedidos) ----------
   const favoritos = historial.length >= 2 ? calcularFavoritos(historial) : [];
   const favoritosHtml = favoritos.length ? `
     <div class="mb-5">
-      <p class="font-display font-600 text-[12.5px] text-muted uppercase tracking-wide mb-2">Tus favoritos en este celular</p>
+      <p class="font-display font-600 text-[12.5px] text-muted uppercase tracking-wide mb-2">Favoritos (histórico)</p>
       <div class="space-y-2">
         ${favoritos.map(f => `
           <button class="favoritoBtn w-full flex items-center gap-3 bg-white border border-line rounded-2xl px-3.5 py-2.5 text-left" data-prod-id="${f.producto_id}">
@@ -981,7 +1044,8 @@ function renderMisPedidos() {
     <div class="ornament-divider mb-4"></div>
   ` : '';
 
-  body.innerHTML = favoritosHtml + historial.map((p, idx) => {
+  // ---------- Sección 3: Historial de pedidos ----------
+  body.innerHTML = favManualesHtml + favoritosHtml + historial.map((p, idx) => {
     const fecha = new Date(p.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
     const itemsTxt = p.items.map(i => `${i.cantidad}× ${escapeHtml(i.nombre)}`).join(', ');
     return `
@@ -1172,6 +1236,9 @@ async function quitarFotoPerfil() {
 }
 
 async function renderPerfilCamaroncitos() {
+  const box = document.getElementById('perfilCamaroncitosBox');
+  box.classList.toggle('hidden', !LEALTAD_ACTIVA);
+  if (!LEALTAD_ACTIVA) return;
   const texto = document.getElementById('perfilCamaroncitosTexto');
   const btn = document.getElementById('perfilVerCamaroncitosBtn');
   if (!perfilClienteActual) {
@@ -1179,8 +1246,8 @@ async function renderPerfilCamaroncitos() {
     btn.onclick = () => toast('Guarda tu teléfono arriba primero.', 'error');
     return;
   }
-  const n = (perfilClienteActual.camaroncitos || 0) % 10;
-  texto.textContent = `${n}/10 camaroncitos`;
+  const n = perfilClienteActual.camaroncitos || 0;
+  texto.textContent = `${n} camaroncito${n === 1 ? '' : 's'}`;
   btn.onclick = () => abrirModalCamaroncitos(n);
 }
 
@@ -1390,6 +1457,9 @@ function productCardHtml(p, catNombre) {
           ? `<img src="${p.imagen_url}" alt="${p.nombre}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" /><div style="display:none;" class="w-full h-full items-center justify-center">${dishIconImg(dishIcon, 'w-[58%] h-[58%] object-contain')}</div>`
           : dishIconImg(dishIcon, 'w-[58%] h-[58%] object-contain')
         }
+        <span class="favoritoHeartBtn absolute top-2 left-2 w-7 h-7 rounded-full bg-ink/35 flex items-center justify-center ${esFavoritoManual(p.id) ? 'text-accent' : 'text-white'}" data-id="${p.id}">
+          <span class="w-[15px] h-[15px] pointer-events-none">${icon(esFavoritoManual(p.id) ? 'heart-filled' : 'heart-outline')}</span>
+        </span>
         ${agotado
           ? `<span class="absolute inset-0 flex items-center justify-center"><span class="bg-ink/80 text-white text-[11.5px] font-display font-700 tracking-wide px-3 py-1 rounded-full">Agotado</span></span>`
           : `<span class="absolute bottom-2 right-2 w-8 h-8 rounded-full btn-gradient glow-accent text-white flex items-center justify-center text-lg font-bold">+</span>`
@@ -1413,6 +1483,16 @@ function attachProdCardListeners() {
     btn.addEventListener('click', () => abrirProducto(btn.dataset.id));
   });
 }
+
+// Delegado a nivel documento (no por tarjeta) — así sigue funcionando aunque el menú
+// se vuelva a renderizar por completo, sin tener que re-engancharlo cada vez.
+document.addEventListener('click', (e) => {
+  const heart = e.target.closest('.favoritoHeartBtn');
+  if (!heart) return;
+  e.stopPropagation();
+  e.preventDefault();
+  toggleFavoritoManual(heart.dataset.id);
+});
 
 function categoriaTieneSubcategorias(catId) {
   return PRODUCTOS.some(p => p.categoria_id === catId && p.subcategoria);
@@ -1744,7 +1824,6 @@ function construirPasosModal(grupos) {
 }
 
 function abrirProducto(id, editItem = null) {
-  if (!TIENDA_ABIERTA) { toast('La tienda está cerrada por hoy.', 'error'); return; }
   const p = PRODUCTOS.find(x => x.id === id);
   if (p && p.disponible === false && !editItem) { toast('Este platillo no está disponible por ahora.', 'error'); return; }
   const grupoIds = PROD_GRUPOS[id] || [];
@@ -1844,7 +1923,12 @@ function abrirProducto(id, editItem = null) {
     body.innerHTML = `
       <div class="flex justify-between items-start mb-1">
         <h3 class="font-display font-600 text-[19px] leading-snug pr-3">${p.nombre}</h3>
-        <button id="closeProduct" class="w-8 h-8 rounded-full bg-line/70 flex items-center justify-center text-lg leading-none shrink-0">&times;</button>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="favoritoHeartBtn w-8 h-8 rounded-full bg-line/70 flex items-center justify-center ${esFavoritoManual(p.id) ? 'text-accent' : 'text-ink'}" data-id="${p.id}">
+            <span class="w-[17px] h-[17px] pointer-events-none">${icon(esFavoritoManual(p.id) ? 'heart-filled' : 'heart-outline')}</span>
+          </span>
+          <button id="closeProduct" class="w-8 h-8 rounded-full bg-line/70 flex items-center justify-center text-lg leading-none shrink-0">&times;</button>
+        </div>
       </div>
       ${pasoActual === 0 && p.descripcion ? `<p class="text-muted text-[13.5px] mb-4">${p.descripcion}</p>` : '<div class="mb-3"></div>'}
       ${dots()}
@@ -2949,6 +3033,7 @@ async function confirmarPedido() {
         cliente_id: cliente.id, direccion_id: dir ? dir.id : null, telefono, nombre_cliente: nombre,
         direccion_texto: direccion, maps_url: recogeEnTienda ? null : mapsUrl, forma_pago: formaPago,
         subtotal, costo_envio: costoEnvio, propina, total, notas: notasFinal, status: 'nuevo',
+        fuera_de_horario: !TIENDA_ABIERTA,
       }).select().single();
 
       const items = cart.map(i => ({
@@ -2963,6 +3048,7 @@ async function confirmarPedido() {
     let msg = esRegalo
       ? `🎀 *Pedido de regalo #${folio}* — ${CONFIG.NEGOCIO_NOMBRE}\n\n`
       : `🧾 *Nuevo pedido #${folio}* — ${CONFIG.NEGOCIO_NOMBRE}\n\n`;
+    if (!TIENDA_ABIERTA) msg += `⏰ *PEDIDO PROGRAMADO* — se hizo fuera de horario, prepárense en cuanto abran.\n\n`;
     let hayPrecioPendiente = false;
     cart.forEach(i => {
       msg += `▪️ ${i.cantidad}× ${i.nombre}`;
@@ -3387,12 +3473,12 @@ if (perfilUsuario.telefono) {
     try {
       const { data: cliente } = await supabase.from('clientes').select('camaroncitos, premio_disponible').eq('telefono', perfilUsuario.telefono).maybeSingle();
       if (cliente) {
-        const n = cliente.camaroncitos % 10;
+        const n = cliente.camaroncitos || 0;
         document.querySelectorAll('.camaroncitosBtnAll').forEach(btn => {
-          btn.classList.remove('hidden');
+          btn.classList.toggle('hidden', !LEALTAD_ACTIVA);
           btn.onclick = () => abrirModalCamaroncitos(n);
         });
-        const mostrarBadge = !!cliente.premio_disponible;
+        const mostrarBadge = !!cliente.premio_disponible && LEALTAD_ACTIVA;
         document.getElementById('camaroncitosBadgeHero').classList.toggle('hidden', !mostrarBadge);
         document.getElementById('camaroncitosBadgeSticky').classList.toggle('hidden', !mostrarBadge);
       }
@@ -3401,12 +3487,40 @@ if (perfilUsuario.telefono) {
 }
 
 function abrirModalCamaroncitos(n) {
-  const dots = Array.from({ length: 10 }, (_, i) => i < n
-    ? `<span class="inline-block text-[26px] align-[-4px]">🦐</span>`
-    : `<span class="inline-block w-[18px] h-[18px] rounded-full align-[-1px]" style="background:#E5E5E5;"></span>`
-  ).join(' ');
-  document.getElementById('camaroncitosDots').innerHTML = dots;
-  document.getElementById('camaroncitosContador').textContent = `${n}/10 camaroncitos`;
+  document.getElementById('camaroncitosContador').textContent = `${n} camaroncito${n === 1 ? '' : 's'}`;
+  document.getElementById('camaroncitosReglaTexto').textContent = `Cada pedido de ${fmt(LEALTAD_MONTO_POR_PUNTO)} o más suma un camaroncito — válido un pedido por día.`;
+
+  const box = document.getElementById('premiosLealtadClienteBox');
+  if (!PREMIOS_LEALTAD.length) {
+    box.innerHTML = `<p class="text-[12.5px] text-muted text-center">Todavía no hay premios configurados.</p>`;
+  } else {
+    box.innerHTML = PREMIOS_LEALTAD.map(p => {
+      const desbloqueado = n >= p.puntos_necesarios;
+      const faltan = p.puntos_necesarios - n;
+      const progreso = Math.min(100, Math.round((n / p.puntos_necesarios) * 100));
+      return `
+        <div class="flex items-center gap-3 rounded-2xl border p-3 ${desbloqueado ? 'border-forest bg-forestLight/10' : 'border-line bg-white'}">
+          <span class="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-cream flex items-center justify-center text-[20px]">
+            ${p.imagen_url ? `<img src="${p.imagen_url}" class="w-full h-full object-cover" />` : '🎁'}
+          </span>
+          <div class="flex-1 min-w-0">
+            <p class="font-display font-600 text-[13.5px] text-ink truncate">${escapeHtml(p.nombre || 'Premio')}</p>
+            ${p.descripcion ? `<p class="text-[11px] text-muted leading-snug">${escapeHtml(p.descripcion)}</p>` : ''}
+            ${desbloqueado
+              ? `<p class="text-[11.5px] font-display font-600 text-forest mt-0.5">✓ ¡Ya lo desbloqueaste!</p>`
+              : `
+                <div class="w-full h-1.5 rounded-full bg-line mt-1.5 overflow-hidden">
+                  <div class="h-full bg-accent rounded-full" style="width:${progreso}%"></div>
+                </div>
+                <p class="text-[11px] text-muted mt-1">Te faltan ${faltan} camaroncito${faltan === 1 ? '' : 's'}</p>
+              `
+            }
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
   document.getElementById('modalCamaroncitos').classList.remove('hidden');
 }
 
@@ -3568,30 +3682,15 @@ document.addEventListener('click', async (e) => {
 <!-- ============ MODAL: MIS CAMARONCITOS (RECOMPENSAS) ============ -->
 <div id="modalCamaroncitos" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center">
   <div class="absolute inset-0 bg-black/40"></div>
-  <div class="relative bg-white rounded-t-3xl sm:rounded-3xl w-full sm:w-[400px] p-6 text-center">
+  <div class="relative bg-white rounded-t-3xl sm:rounded-3xl w-full sm:w-[400px] p-6 text-center max-h-[85vh] overflow-y-auto">
     <button id="btnCerrarCamaroncitos" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-line/70 flex items-center justify-center text-lg leading-none">&times;</button>
     <p class="text-[36px] mb-1">🦐</p>
     <p class="font-display font-700 text-[18px] text-ink mb-1">Tus camaroncitos</p>
-    <p id="camaroncitosContador" class="font-display font-600 text-[15px] text-forestDark mb-4">0/10 camaroncitos</p>
-    <div id="camaroncitosDots" class="leading-none mb-6"></div>
+    <p id="camaroncitosContador" class="font-display font-600 text-[15px] text-forestDark mb-5">0 camaroncitos</p>
 
-    <div class="flex items-stretch gap-0 rounded-2xl overflow-hidden border border-line">
-      <div class="flex-1 px-3 py-4 flex flex-col items-center">
-        <span class="w-[26px] h-[26px] text-accent mb-1.5" data-icon-slot="gift"></span>
-        <p class="font-display font-700 text-[15px] text-ink">5</p>
-        <p class="text-[11px] text-muted -mt-0.5 mb-1">camaroncitos</p>
-        <p class="text-[12px] text-ink font-600">Premio</p>
-      </div>
-      <div class="w-px bg-line shrink-0"></div>
-      <div class="flex-1 px-3 py-4 flex flex-col items-center" style="background: linear-gradient(160deg, #FFF6EC 0%, #FFFFFF 100%);">
-        <span class="w-[26px] h-[26px] text-accent mb-1.5" data-icon-slot="gift"></span>
-        <p class="font-display font-700 text-[15px] text-accent">10</p>
-        <p class="text-[11px] text-muted -mt-0.5 mb-1">camaroncitos</p>
-        <p class="text-[12px] text-accent font-700">Premio mayor</p>
-      </div>
-    </div>
+    <div id="premiosLealtadClienteBox" class="space-y-2.5 text-left"></div>
 
-    <p class="text-[11.5px] text-muted mt-4 leading-relaxed">Cada pedido de $250 o más suma un camaroncito — válido un pedido por día.</p>
+    <p id="camaroncitosReglaTexto" class="text-[11.5px] text-muted mt-4 leading-relaxed">Cada pedido suma un camaroncito — válido un pedido por día.</p>
   </div>
 </div>
 
