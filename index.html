@@ -366,7 +366,7 @@
         <span class="w-9 h-9 rounded-full bg-cream flex items-center justify-center shrink-0 text-forestDark">
           <span class="w-[18px] h-[18px]" data-icon-slot="history"></span>
         </span>
-        <span class="font-display font-600 text-[14px] text-ink">Mis Pedidos</span>
+        <span class="font-display font-600 text-[14px] text-ink">Mis favoritos</span>
       </button>
       <button id="drawerPromoBtn" class="w-full flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-cream text-left">
         <span class="w-9 h-9 rounded-full bg-cream flex items-center justify-center shrink-0 text-accent">
@@ -452,7 +452,7 @@
   <div class="absolute inset-0 bg-black/40" id="misPedidosOverlay"></div>
   <div class="absolute right-0 top-0 bottom-0 w-full sm:w-[430px] bg-cream flex flex-col" style="height: 100dvh;">
     <div class="flex items-center justify-between px-6 py-4 border-b border-line bg-white shrink-0">
-      <h2 class="font-display font-600 text-[18px]">Mis pedidos</h2>
+      <h2 class="font-display font-600 text-[18px]">Mis favoritos</h2>
       <button id="closeMisPedidos" class="w-8 h-8 rounded-full bg-line/70 flex items-center justify-center text-lg leading-none shrink-0">&times;</button>
     </div>
     <div class="flex-1 overflow-y-auto min-h-0">
@@ -703,6 +703,7 @@ let promoActivaActual = null; // la promoción marcada como activa en la galerí
 // FAVORITOS MANUALES (corazón) — distintos de "favoritos por historial de pedidos"
 // ============================================================
 let favoritosManuales = [];
+let misPedidosHistorialExpandido = false; // se resetea a false cada vez que se abre el panel
 try { favoritosManuales = JSON.parse(localStorage.getItem('camaroncin_favoritos_manuales') || '[]'); } catch { favoritosManuales = []; }
 
 function esFavoritoManual(id) { return favoritosManuales.includes(id); }
@@ -1044,8 +1045,15 @@ function renderMisPedidos() {
     <div class="ornament-divider mb-4"></div>
   ` : '';
 
-  // ---------- Sección 3: Historial de pedidos ----------
-  body.innerHTML = favManualesHtml + favoritosHtml + historial.map((p, idx) => {
+  // ---------- Sección 3: Historial de pedidos (solo los últimos 4, con opción de ver todo) ----------
+  const LIMITE_HISTORIAL_CORTO = 4;
+  const mostrarTodo = misPedidosHistorialExpandido || historial.length <= LIMITE_HISTORIAL_CORTO;
+  const historialVisible = mostrarTodo ? historial : historial.slice(0, LIMITE_HISTORIAL_CORTO);
+
+  const historialHtml = `
+    <p class="font-display font-600 text-[12.5px] text-muted uppercase tracking-wide mb-2">Mis pedidos</p>
+    <div class="space-y-3">
+    ${historialVisible.map((p, idx) => {
     const fecha = new Date(p.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
     const itemsTxt = p.items.map(i => `${i.cantidad}× ${escapeHtml(i.nombre)}`).join(', ');
     return `
@@ -1064,7 +1072,18 @@ function renderMisPedidos() {
         </div>
       </div>
     `;
-  }).join('');
+  }).join('')}
+    </div>
+    ${!mostrarTodo ? `<button id="verHistorialCompletoBtn" class="w-full text-center text-[12.5px] font-display font-600 text-forest mt-3 py-2">Ver historial completo (${historial.length - LIMITE_HISTORIAL_CORTO} más)</button>` : ''}
+  `;
+
+  body.innerHTML = favManualesHtml + favoritosHtml + historialHtml;
+
+  const btnVerCompleto = document.getElementById('verHistorialCompletoBtn');
+  if (btnVerCompleto) btnVerCompleto.addEventListener('click', () => {
+    misPedidosHistorialExpandido = true;
+    renderMisPedidos();
+  });
 
   body.querySelectorAll('.favoritoBtn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1108,6 +1127,7 @@ function repetirPedidoDesdeHistorial(itemsGuardados) {
 }
 
 function abrirMisPedidos() {
+  misPedidosHistorialExpandido = false;
   renderMisPedidos();
   document.getElementById('misPedidosDrawer').classList.remove('hidden');
 }
