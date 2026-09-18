@@ -815,6 +815,7 @@ async function cargarMenu() {
   mostrarBotonRepetir();
   renderFavoritos();
   mostrarPromoDelDia();
+  mostrarAvisoAlergenosSiHaceFalta();
 
   const banner = document.getElementById('closedBanner');
   if (!TIENDA_ABIERTA) {
@@ -865,6 +866,20 @@ function renderPromoDentro(contenedorId, promo) {
     cont.innerHTML = `<img src="${promo.imagen_url}" class="flex-1 w-full object-cover" alt="Promoción" />${descripcionHtml}`;
   }
 }
+
+function mostrarAvisoAlergenosSiHaceFalta() {
+  try {
+    if (localStorage.getItem('camaroncin_aviso_alergenos_visto')) return;
+  } catch (e) { return; }
+  // Pequeño retraso para no chocar visualmente con el pop-up de promoción, si también sale al abrir.
+  setTimeout(() => {
+    document.getElementById('modalAvisoAlergenos').classList.remove('hidden');
+  }, 2500);
+}
+document.getElementById('btnCerrarAvisoAlergenos').addEventListener('click', () => {
+  try { localStorage.setItem('camaroncin_aviso_alergenos_visto', '1'); } catch (e) {}
+  document.getElementById('modalAvisoAlergenos').classList.add('hidden');
+});
 
 function mostrarPromoDelDia() {
   if (!promoActivaActual) return;
@@ -3742,6 +3757,17 @@ document.addEventListener('click', async (e) => {
 <div id="modalPromoDia" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center text-center overflow-hidden bg-black">
   <button id="btnCerrarPromoDia" class="absolute top-5 right-5 w-9 h-9 rounded-full bg-black/40 text-white flex items-center justify-center text-xl leading-none z-10">&times;</button>
   <div id="promoDiaContenedor" class="absolute inset-0 flex flex-col"></div>
+</div>
+
+<!-- ============ MODAL: AVISO DE ALÉRGENOS (una sola vez, primera visita) ============ -->
+<div id="modalAvisoAlergenos" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+  <div class="absolute inset-0 bg-black/50"></div>
+  <div class="relative bg-white rounded-t-3xl sm:rounded-3xl w-full sm:w-[420px] p-6 text-center">
+    <p class="text-[34px] mb-2">⚠️</p>
+    <p class="font-display font-700 text-[16.5px] text-ink mb-3">Aviso importante</p>
+    <p class="text-[13.5px] text-ink/85 leading-relaxed mb-5">Nuestros platillos crudos a base de mariscos pueden provocar reacciones en personas con sensibilidad o alergias alimentarias. El consumo de estos productos es bajo consideración del cliente.</p>
+    <button id="btnCerrarAvisoAlergenos" class="w-full btn-gradient text-white font-display font-600 rounded-2xl py-3 text-[14.5px] shadow-sm">Entendido</button>
+  </div>
 </div>
 
 <!-- ============ MODAL: PROMOCIÓN (a pedido, desde el menú lateral) ============ -->
