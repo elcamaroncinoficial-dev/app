@@ -48,6 +48,103 @@
 
   .paginas{max-width:100%;margin:0 auto;}
 
+  .galeria-header{padding:48px 20px 8px;text-align:center;font-family:'Baloo 2',sans-serif;}
+  .galeria-header h2{color:#fff;font-size:23px;font-weight:700;letter-spacing:.01em;}
+  .galeria-header p{color:rgba(255,255,255,.5);font-size:12px;margin-top:7px;letter-spacing:.02em;}
+
+  .galeria{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:20px 14px;
+    padding:24px 16px 56px;
+    max-width:100%;
+    margin:0 auto;
+  }
+  .galeria-item{
+    cursor:pointer;
+    opacity:0;
+    transform:translateY(18px);
+    transition:opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1);
+  }
+  .galeria-item.visible{opacity:1;transform:translateY(0);}
+  .galeria-item figure{
+    border-radius:16px;
+    overflow:hidden;
+    aspect-ratio:4/5;
+    background:#152249;
+    box-shadow:0 10px 26px rgba(0,0,0,.3);
+    transition:transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease;
+  }
+  .galeria-item:active figure{transform:scale(.96);}
+  .galeria-item img{
+    width:100%;height:100%;object-fit:cover;display:block;
+    opacity:0;
+    transition:opacity .5s ease, transform .6s ease;
+    transform:scale(1.04);
+  }
+  .galeria-item img.cargada{opacity:1;transform:scale(1);}
+  .galeria-item figcaption{
+    margin-top:9px;
+    text-align:center;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:600;
+    font-size:11px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    color:rgba(251,246,236,.72);
+    line-height:1.3;
+  }
+
+  #lightbox{
+    position:fixed;inset:0;z-index:200;
+    display:flex;align-items:center;justify-content:center;
+    padding:28px 20px;
+    background:rgba(6,10,26,0);
+    backdrop-filter:blur(0px);
+    -webkit-backdrop-filter:blur(0px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .35s ease, background .35s ease, backdrop-filter .35s ease;
+  }
+  #lightbox.abierto{
+    opacity:1;pointer-events:auto;
+    background:rgba(6,10,26,.92);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+  }
+  #lightbox figure{
+    max-width:min(92vw,520px);
+    max-height:82vh;
+    margin:0;
+    transform:scale(.92);
+    transition:transform .35s cubic-bezier(.2,.7,.2,1);
+  }
+  #lightbox.abierto figure{transform:scale(1);}
+  #lightbox img{
+    width:100%;height:100%;max-height:74vh;
+    object-fit:contain;
+    border-radius:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  #lightbox figcaption{
+    margin-top:16px;text-align:center;
+    font-family:'Baloo 2',sans-serif;font-weight:700;
+    font-size:15px;color:#fff;letter-spacing:.02em;
+  }
+  #lightbox .cerrar{
+    position:absolute;top:20px;right:20px;
+    width:40px;height:40px;border-radius:50%;
+    background:rgba(255,255,255,.1);
+    border:1.5px solid rgba(255,255,255,.25);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;
+  }
+
+  @media (min-width:700px){
+    .galeria{max-width:900px;grid-template-columns:repeat(4,1fr);gap:26px 18px;}
+    .galeria-item figcaption{font-size:11.5px;}
+  }
+
   @media (min-width:700px){
     body{background:#050B18;}
     .paginas{
@@ -80,6 +177,95 @@
 <img src="menu-img/pagina-7.jpg" alt="De la Tierra, Pequeños Navegantes, Bebidas, Postre" />
 <img src="menu-img/pagina-8.jpg" alt="Gracias por elegirnos" />
 </div>
+
+<div class="galeria-header">
+  <h2>Galería de platillos</h2>
+  <p>Así se ven en la mesa 🦐</p>
+</div>
+<div class="galeria">
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/combo_taco_gobernador_empanada_refresco.jpg" alt="Combo Taco Gobernador" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Combo Taco Gobernador&#39;)"></figure><figcaption>Combo Taco Gobernador</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/pescadillas.jpg" alt="Pescadillas" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Pescadillas&#39;)"></figure><figcaption>Pescadillas</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/platillo-6c114e5b-5d12-4537-bb9e-e7143674309d-1789097425031.jpg" alt="Camaroncillas" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Camaroncillas&#39;)"></figure><figcaption>Camaroncillas</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/filetito-capeado-sencillo.jpg" alt="Filetito capeado sencillo" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Filetito capeado sencillo&#39;)"></figure><figcaption>Filetito capeado sencillo</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/filetito-capeado-preparado.jpg" alt="Filetito capeado preparado" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Filetito capeado preparado&#39;)"></figure><figcaption>Filetito capeado preparado</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/chicharron-de-pescado.jpg" alt="Chicharrón de pescado" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Chicharrón de pescado&#39;)"></figure><figcaption>Chicharrón de pescado</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tacos-gobernador.jpg" alt="Tacos gobernador" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Tacos gobernador&#39;)"></figure><figcaption>Tacos gobernador</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/taco-capeado.jpg" alt="Taco capeado" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Taco capeado&#39;)"></figure><figcaption>Taco capeado</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/empanada_de_queso.jpg" alt="Empanada de queso" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Empanada de queso&#39;)"></figure><figcaption>Empanada de queso</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/empanada-de-pulpo-o-camaron.jpg" alt="Empanada de pulpo o camarón" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Empanada de pulpo/camarón&#39;)"></figure><figcaption>Empanada de pulpo/camarón</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/platillo-0438b2c7-cadc-455f-a278-8b8d16818037-1789097363329.jpg" alt="Empanada de camarón" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Empanada de camarón&#39;)"></figure><figcaption>Empanada de camarón</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/empanada-mixta.jpg" alt="Empanada mixta" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Empanada mixta&#39;)"></figure><figcaption>Empanada mixta</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/caldo-de-camaron-pelado.jpg" alt="Caldo de camarón pelado" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Caldo de camarón pelado&#39;)"></figure><figcaption>Caldo de camarón pelado</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/caldo-de-camaron-para-pelar-v2.jpg" alt="Caldo de camarón para pelar" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Caldo de camarón p/pelar&#39;)"></figure><figcaption>Caldo de camarón p/pelar</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/caldo-de-camaron-para-pelar.jpg" alt="Consomé de camarón" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Consomé de camarón&#39;)"></figure><figcaption>Consomé de camarón</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/caldo-de-pescado.jpg" alt="Caldo de pescado" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Caldo de pescado&#39;)"></figure><figcaption>Caldo de pescado</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/sopa-de-mariscos.jpg" alt="Sopa de mariscos" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Sopa de mariscos&#39;)"></figure><figcaption>Sopa de mariscos</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/platillo-49849001-509d-4310-8356-ed2e337d8a76-1789100307610.jpg" alt="Cazuela de mariscos" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Cazuela de mariscos&#39;)"></figure><figcaption>Cazuela de mariscos</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/almeja-chocolata.jpg" alt="Almeja chocolata" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Almeja chocolata&#39;)"></figure><figcaption>Almeja chocolata</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tostada-de-ceviche-de-camaron.jpg" alt="Tostada de ceviche de camarón" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Tostada de ceviche camarón&#39;)"></figure><figcaption>Tostada de ceviche camarón</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tostada-de-ceviche-de-pescado.jpg" alt="Tostada de ceviche de pescado" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Tostada de ceviche pescado&#39;)"></figure><figcaption>Tostada de ceviche pescado</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tostada-macha.jpg" alt="Tostada macha" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Tostada macha&#39;)"></figure><figcaption>Tostada macha</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tostada-de-pulpo.jpg" alt="Tostada de pulpo" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Tostada de pulpo&#39;)"></figure><figcaption>Tostada de pulpo</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/coctel_chico.jpg" alt="Cóctel chico" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Cóctel chico&#39;)"></figure><figcaption>Cóctel chico</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/coctel_mediano.jpg" alt="Cóctel mediano" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Cóctel mediano&#39;)"></figure><figcaption>Cóctel mediano</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/coctel-grande.jpg" alt="Cóctel grande" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Cóctel grande&#39;)"></figure><figcaption>Cóctel grande</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/platillo-c53a5894-dbd5-43fd-812e-6aaa03f17219-1789097190628.jpg" alt="Camarones Uh Ah Ah" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Camarones Uh, Ah, Ah&#39;)"></figure><figcaption>Camarones Uh, Ah, Ah</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/ceviche-mixto.jpg" alt="Ceviche mixto" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Ceviche mixto&#39;)"></figure><figcaption>Ceviche mixto</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/platillo-1addf5b7-be55-4b09-988a-d49af5f9089d-1789097212817.jpg" alt="Aguachile mixto" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Aguachile mixto&#39;)"></figure><figcaption>Aguachile mixto</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/aguachile-de-camaron.jpg" alt="Aguachile de camarón" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Aguachile de camarón&#39;)"></figure><figcaption>Aguachile de camarón</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/aguachile-de-callo-de-hacha.jpg" alt="Aguachile de callo de hacha" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Aguachile callo de hacha&#39;)"></figure><figcaption>Aguachile callo de hacha</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/mojarra-al-gusto.jpg" alt="Mojarra al gusto" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Mojarra al gusto&#39;)"></figure><figcaption>Mojarra al gusto</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/filete-de-pescado-al-gusto.jpg" alt="Filete de pescado al gusto" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Filete de pescado al gusto&#39;)"></figure><figcaption>Filete de pescado al gusto</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/salmon-al-gusto.jpg" alt="Salmón al gusto" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Salmón al gusto&#39;)"></figure><figcaption>Salmón al gusto</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/filete-empapelado.jpg" alt="Filete empapelado" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Filete empapelado&#39;)"></figure><figcaption>Filete empapelado</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/camarones-al-gusto.jpg" alt="Camarones al gusto" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Camarones al gusto&#39;)"></figure><figcaption>Camarones al gusto</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/alambre-de-camaron-pulpo-o-mixto-v2.jpg" alt="Alambre de camarón, pulpo o mixto" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Alambre de camarón/pulpo&#39;)"></figure><figcaption>Alambre de camarón/pulpo</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/camarones-momia.jpg" alt="Camarones momia" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Camarones momia&#39;)"></figure><figcaption>Camarones momia</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/hamburguesa-de-camaron.jpg" alt="Hamburguesa de camarón" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Hamburguesa de camarón&#39;)"></figure><figcaption>Hamburguesa de camarón</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/spaguetti-con-camarones-a-los-3-quesos.jpg" alt="Spaguetti con camarones a los 3 quesos" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Spaguetti camarones 3 quesos&#39;)"></figure><figcaption>Spaguetti camarones 3 quesos</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/spaguetti-con-mariscos-a-los-3-quesos.jpg" alt="Spaguetti con mariscos a los 3 quesos" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Spaguetti mariscos 3 quesos&#39;)"></figure><figcaption>Spaguetti mariscos 3 quesos</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/pulpo-a-la-talla.jpg" alt="Pulpo a la talla" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Pulpo a la talla&#39;)"></figure><figcaption>Pulpo a la talla</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/camarones-gratinados.jpg" alt="Camarones gratinados" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Camarones gratinados&#39;)"></figure><figcaption>Camarones gratinados</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/arrachera-marinada.jpg" alt="Arrachera marinada" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Arrachera marinada&#39;)"></figure><figcaption>Arrachera marinada</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/hamburguesa_de_res.jpg" alt="Hamburguesa de res" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Hamburguesa de res&#39;)"></figure><figcaption>Hamburguesa de res</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/mini-hamburguesa-de-res-con-papas.jpg" alt="Mini-hamburguesa de res" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Mini-hamburguesa de res&#39;)"></figure><figcaption>Mini-hamburguesa de res</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tenders-de-pescado-con-papas.jpg" alt="Tenders de pescado con papas" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Tenders de pescado&#39;)"></figure><figcaption>Tenders de pescado</figcaption></div>
+<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/postre-del-dia.jpg" alt="Postre del día" onload="this.classList.add(&#39;cargada&#39;)" onclick="abrirLightbox(this,&#39;Postre del día&#39;)"></figure><figcaption>Postre del día</figcaption></div></div>
+
+<div id="lightbox" onclick="if(event.target===this)cerrarLightbox()">
+  <button class="cerrar" onclick="cerrarLightbox()" aria-label="Cerrar">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+  <figure>
+    <img id="lightbox-img" src="" alt="">
+    <figcaption id="lightbox-caption"></figcaption>
+  </figure>
+</div>
+
+<script>
+function abrirLightbox(imgEl, nombre){
+  document.getElementById('lightbox-img').src = imgEl.src;
+  document.getElementById('lightbox-caption').textContent = nombre;
+  document.getElementById('lightbox').classList.add('abierto');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarLightbox(){
+  document.getElementById('lightbox').classList.remove('abierto');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarLightbox(); });
+
+const observador = new IntersectionObserver((entradas) => {
+  entradas.forEach(entrada => {
+    if (entrada.isIntersecting) {
+      entrada.target.classList.add('visible');
+      observador.unobserve(entrada.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+
+document.querySelectorAll('.galeria-item').forEach(el => observador.observe(el));
+</script>
 
 </body>
 </html>
