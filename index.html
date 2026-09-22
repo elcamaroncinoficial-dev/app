@@ -1005,11 +1005,11 @@ function renderMisPedidos() {
       <div class="space-y-2">
         ${favManuales.map(p => `
           <button class="favoritoBtn w-full flex items-center gap-3 bg-white border border-line rounded-2xl px-3.5 py-2.5 text-left" data-prod-id="${p.id}">
-            <span class="w-8 h-8 rounded-full bg-cream flex items-center justify-center shrink-0 text-accent">
-              ${icon('heart-filled')}
+            <span class="w-10 h-10 rounded-full bg-cream flex items-center justify-center shrink-0 text-accent overflow-hidden">
+              ${p.imagen_url ? `<img src="${p.imagen_url}" alt="" class="w-full h-full object-cover" />` : icon('heart-filled')}
             </span>
             <span class="flex-1 min-w-0">
-              <span class="block text-[13px] text-ink truncate">${escapeHtml(p.nombre)}</span>
+              <span class="block text-[13px] text-ink leading-snug">${escapeHtml(p.nombre)}</span>
             </span>
             <span class="text-[11px] font-display font-600 text-forest shrink-0">Pedir →</span>
           </button>
@@ -1045,11 +1045,11 @@ function renderMisPedidos() {
       <div class="space-y-2">
         ${favoritos.map(f => `
           <button class="favoritoBtn w-full flex items-center gap-3 bg-white border border-line rounded-2xl px-3.5 py-2.5 text-left" data-prod-id="${f.producto_id}">
-            <span class="w-8 h-8 rounded-full bg-cream flex items-center justify-center shrink-0 text-forestDark">
-              ${dishIconImg(dishIconKeyFor(f.producto, null), 'w-[16px] h-[16px]')}
+            <span class="w-10 h-10 rounded-full bg-cream flex items-center justify-center shrink-0 text-forestDark overflow-hidden">
+              ${f.producto.imagen_url ? `<img src="${f.producto.imagen_url}" alt="" class="w-full h-full object-cover" />` : dishIconImg(dishIconKeyFor(f.producto, null), 'w-[16px] h-[16px]')}
             </span>
             <span class="flex-1 min-w-0">
-              <span class="block text-[13px] text-ink truncate">${escapeHtml(f.producto.nombre)}</span>
+              <span class="block text-[13px] text-ink leading-snug">${escapeHtml(f.producto.nombre)}</span>
               <span class="block text-[11px] text-muted">Pedido ${f.veces} ${f.veces === 1 ? 'vez' : 'veces'}</span>
             </span>
             <span class="text-[11px] font-display font-600 text-forest shrink-0">Pedir →</span>
