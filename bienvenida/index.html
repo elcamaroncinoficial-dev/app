@@ -34,61 +34,60 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    justify-content:flex-end;
+    justify-content:center;
     text-align:center;
-    padding:32px 24px calc(32px + env(safe-area-inset-bottom,0px));
+    padding:18px 22px calc(18px + env(safe-area-inset-bottom,0px));
     background:
       linear-gradient(180deg, rgba(10,8,6,.35) 0%, rgba(8,6,5,.55) 55%, rgba(5,4,3,.88) 100%),
       url('fondo_mariscos.jpg');
     background-size:cover;
     background-position:center;
     position:relative;
-    overflow:hidden;
     color:var(--crema);
   }
   .contenido{position:relative; z-index:1; max-width:420px; width:100%; display:flex; flex-direction:column; align-items:center;}
 
   img.logo{
-    width:min(58vw,240px);
+    width:min(28vw,116px);
     filter:drop-shadow(0 14px 30px rgba(0,0,0,.45));
-    margin-bottom:48px;
+    margin-bottom:16px;
   }
 
-  .botones{width:100%; display:flex; flex-direction:column; gap:16px;}
+  .botones{width:100%; display:flex; flex-direction:column; gap:10px;}
 
   .btn{
     display:flex;
     align-items:center;
-    gap:16px;
+    gap:14px;
     width:100%;
-    padding:19px 20px;
-    border-radius:20px;
+    padding:13px 16px;
+    border-radius:18px;
     text-decoration:none;
     text-align:left;
     transition:transform .15s ease;
   }
   .btn:active{transform:scale(.98);}
   .btn-icono{
-    width:50px;height:50px;
-    border-radius:14px;
+    width:42px;height:42px;
+    border-radius:13px;
     display:flex;align-items:center;justify-content:center;
     flex-shrink:0;
   }
-  .btn-icono svg{width:26px;height:26px;}
+  .btn-icono svg{width:22px;height:22px;}
   .btn-texto{flex:1; min-width:0;}
   .btn-titulo{
     font-family:'Baloo 2',sans-serif;
     font-weight:700;
-    font-size:16.5px;
-    line-height:1.25;
+    font-size:15.5px;
+    line-height:1.2;
     display:block;
   }
   .btn-sub{
     display:block;
-    font-size:12px;
+    font-size:11px;
     opacity:.85;
-    margin-top:3px;
-    line-height:1.4;
+    margin-top:2px;
+    line-height:1.3;
   }
   .btn-flecha{font-size:20px; opacity:.6; flex-shrink:0;}
 
@@ -107,12 +106,12 @@
   }
   .btn-secundario .btn-icono{background:rgba(227,177,85,.18); color:var(--dorado);}
 
-  .acciones{width:100%; display:flex; gap:10px; margin-top:16px;}
+  .acciones{width:100%; display:flex; gap:8px; margin-top:10px;}
   .accion{
     flex:1;
-    display:flex; flex-direction:column; align-items:center; gap:7px;
-    padding:14px 6px;
-    border-radius:16px;
+    display:flex; flex-direction:column; align-items:center; gap:5px;
+    padding:10px 4px;
+    border-radius:14px;
     background:linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
     border:1.5px solid rgba(255,255,255,.22);
     color:var(--crema);
@@ -122,19 +121,28 @@
   }
   .accion:active{transform:scale(.96);}
   .accion-icono{
-    width:38px;height:38px;
-    border-radius:12px;
+    width:30px;height:30px;
+    border-radius:10px;
     background:rgba(227,177,85,.18);
     display:flex;align-items:center;justify-content:center;
     color:var(--dorado);
     flex-shrink:0;
   }
-  .accion-icono svg{width:19px;height:19px;}
-  .accion-label{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:11.5px; line-height:1.2;}
+  .accion-icono svg{width:16px;height:16px;}
+  .accion-label{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:10.5px; line-height:1.15;}
 
-  .redes{display:flex; gap:14px; margin-top:30px;}
+  .social-label{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:.03em;
+    color:rgba(251,246,236,.65);
+    margin-top:16px;
+  }
+
+  .redes{display:flex; gap:12px; margin-top:8px;}
   .red-icono{
-    width:44px;height:44px;
+    width:36px;height:36px;
     border-radius:50%;
     background:rgba(0,0,0,.35);
     border:1.5px solid rgba(255,255,255,.18);
@@ -142,28 +150,19 @@
     color:var(--crema);
     text-decoration:none;
   }
-  .red-icono svg{width:19px;height:19px;}
-
-  .social-label{
-    font-family:'Baloo 2',sans-serif;
-    font-weight:700;
-    font-size:12px;
-    letter-spacing:.03em;
-    color:rgba(251,246,236,.65);
-    margin-top:32px;
-  }
+  .red-icono svg{width:16px;height:16px;}
 
   .compartir{
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    margin-top:16px;
-    padding:12px 22px;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    margin-top:10px;
+    padding:9px 20px;
     border-radius:100px;
     background:linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,.05));
     border:1.5px solid rgba(255,255,255,.24);
     color:var(--crema);
     font-family:'Baloo 2',sans-serif;
     font-weight:700;
-    font-size:13.5px;
+    font-size:12.5px;
     cursor:pointer;
     transition:transform .15s ease;
   }
@@ -190,10 +189,10 @@
   .toast.mostrar{opacity:1; transform:translateX(-50%) translateY(0);}
 
   .pie{
-    margin-top:28px;
-    font-size:11.5px;
+    margin-top:14px;
+    font-size:10.5px;
     color:rgba(251,246,236,.55);
-    line-height:1.7;
+    line-height:1.5;
   }
 
   @media (min-width:700px){
