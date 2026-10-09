@@ -697,7 +697,7 @@ let checkoutStep = 0; // 0=Tu pedido, 1=Datos de entrega, 2=Pago y confirmación
 // para que el cliente nunca tenga que volver a escribir todo desde cero por error.
 let datosEntrega = { nombre: '', telefono: '', direccion: '', nombreDestinatario: '', telefonoDestinatario: '', mensajeRegalo: '' };
 let irAPasoCheckoutRef = null; // referencia a la función interna de renderCart(), para que el botón "atrás" del celular pueda usarla
-let promoActivaActual = null; // la promoción marcada como activa en la galería del admin, si el interruptor maestro está encendido
+let promosActivas = []; // las promociones marcadas como activas en la galería del admin (puede haber varias), si el interruptor maestro está encendido
 
 // ============================================================
 // FAVORITOS MANUALES (corazón) — distintos de "favoritos por historial de pedidos"
@@ -778,7 +778,7 @@ async function cargarMenu() {
     return;
   }
 
-  const [{ data: cats }, { data: prods }, { data: grupos }, { data: opciones }, { data: pg }, { data: zonas }, { data: config }, { data: promoActivaRow }, { data: premiosLealtad }] = await Promise.all([
+  const [{ data: cats }, { data: prods }, { data: grupos }, { data: opciones }, { data: pg }, { data: zonas }, { data: config }, { data: promosActivasRows }, { data: premiosLealtad }] = await Promise.all([
     supabase.from('categorias').select('*').order('orden'),
     supabase.from('productos').select('id, categoria_id, nombre, descripcion, precio_base, imagen_url, disponible, orden, subcategoria, destacado').eq('descontinuado', false).order('orden'),
     supabase.from('grupos').select('*'),
@@ -786,7 +786,7 @@ async function cargarMenu() {
     supabase.from('producto_grupos').select('*'),
     supabase.from('zonas').select('*').eq('activa', true),
     supabase.from('configuracion').select('*').eq('id', 1).maybeSingle(),
-    supabase.from('promociones').select('*').eq('activa', true).maybeSingle(),
+    supabase.from('promociones').select('*').eq('activa', true).order('creado_en', { ascending: false }),
     supabase.from('premios_lealtad').select('*').eq('activo', true).order('puntos_necesarios'),
   ]);
 
@@ -794,7 +794,7 @@ async function cargarMenu() {
   PRODUCTOS = prods || [];
   ZONAS = zonas || [];
   TIENDA_ABIERTA = config ? config.tienda_abierta : true;
-  promoActivaActual = (config && config.promo_activa) ? (promoActivaRow || null) : null;
+  promosActivas = (config && config.promo_activa) ? (promosActivasRows || []) : [];
   LEALTAD_ACTIVA = config ? config.lealtad_activa !== false : true;
   LEALTAD_MONTO_POR_PUNTO = config ? Number(config.lealtad_monto_por_punto || 250) : 250;
   PREMIOS_LEALTAD = premiosLealtad || [];
@@ -841,30 +841,41 @@ function formatVigenciaPromo(promo) {
 function renderPromoDentro(contenedorId, promo) {
   const cont = document.getElementById(contenedorId);
   const vigenciaTexto = formatVigenciaPromo(promo);
-  const vigenciaHtml = vigenciaTexto ? `<p class="text-[12.5px] text-white/85 mt-1.5">${vigenciaTexto}</p>` : '';
-  const descripcionHtml = promo.descripcion ? `
-    <div class="px-6 py-4 text-center" style="background: linear-gradient(160deg, #FFA451 0%, #F07C1D 55%, #C85E0E 100%);">
-      <p class="font-display font-600 text-white text-[16px] leading-snug">${escapeHtml(promo.descripcion)}</p>
+  const vigenciaHtml = vigenciaTexto ? `<p style="font-size:12.5px;color:rgba(255,255,255,.85);margin-top:6px;">${vigenciaTexto}</p>` : '';
+  const posicion = promo.posicion_texto;
+  const hayTexto = !!promo.descripcion;
+  const textoSeguro = hayTexto ? escapeHtml(promo.descripcion) : '';
+
+  // Banda naranja con el texto (cuando va arriba o abajo de la imagen). No se encoge: la imagen cede espacio.
+  const banda = (hayTexto && posicion !== 'sobre') ? `
+    <div style="flex:0 0 auto;padding:14px 20px;text-align:center;background:linear-gradient(160deg,#FFA451 0%,#F07C1D 55%,#C85E0E 100%);">
+      <p class="font-display font-600" style="color:#fff;font-size:16px;line-height:1.3;">${textoSeguro}</p>
       ${vigenciaHtml}
-    </div>
-  ` : '';
-  if (promo.posicion_texto === 'sobre') {
-    cont.innerHTML = `
-      <div class="relative flex-1 w-full">
-        <img src="${promo.imagen_url}" class="absolute inset-0 w-full h-full object-cover" alt="Promoción" />
-        ${promo.descripcion ? `
-          <div class="absolute inset-x-0 bottom-0 p-5 pt-14 text-center" style="background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);">
-            <p class="font-display font-600 text-white text-[16px] leading-snug">${escapeHtml(promo.descripcion)}</p>
-            ${vigenciaHtml}
-          </div>
-        ` : ''}
+    </div>` : '';
+
+  // Texto superpuesto sobre la imagen (posición "sobre").
+  const superpuesto = (hayTexto && posicion === 'sobre') ? `
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:56px 20px 18px;text-align:center;background:linear-gradient(to top,rgba(0,0,0,.78),transparent);">
+      <p class="font-display font-600" style="color:#fff;font-size:16px;line-height:1.3;">${textoSeguro}</p>
+      ${vigenciaHtml}
+    </div>` : '';
+
+  // MARCO DE PROTECCIÓN: la promoción vive dentro de un marco con margen respecto a los bordes de la pantalla
+  // (y respecto a la barra de estado / barra de navegación). La imagen se escala para caber COMPLETA, sin recortarse
+  // nunca; si sobra espacio a los lados o arriba/abajo, se rellena con la misma imagen desenfocada.
+  cont.innerHTML = `
+    <div style="width:100%;height:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 62px) 16px calc(env(safe-area-inset-bottom,0px) + 16px);">
+      <div style="display:flex;flex-direction:column;width:min(100%,520px);max-height:100%;border-radius:26px;overflow:hidden;background:#000;border:3px solid rgba(255,255,255,.92);box-shadow:0 18px 50px rgba(0,0,0,.55);">
+        ${posicion === 'arriba' ? banda : ''}
+        <div style="position:relative;flex:0 1 auto;min-height:0;display:flex;overflow:hidden;background:#000;">
+          <img src="${promo.imagen_url}" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(22px) brightness(.55);transform:scale(1.15);" />
+          <img src="${promo.imagen_url}" alt="Promoción" style="position:relative;display:block;width:100%;height:auto;min-height:0;object-fit:contain;" />
+          ${superpuesto}
+        </div>
+        ${posicion !== 'arriba' && posicion !== 'sobre' ? banda : ''}
       </div>
-    `;
-  } else if (promo.posicion_texto === 'arriba') {
-    cont.innerHTML = `${descripcionHtml}<img src="${promo.imagen_url}" class="flex-1 w-full object-cover" alt="Promoción" />`;
-  } else {
-    cont.innerHTML = `<img src="${promo.imagen_url}" class="flex-1 w-full object-cover" alt="Promoción" />${descripcionHtml}`;
-  }
+    </div>
+  `;
 }
 
 function mostrarAvisoAlergenosSiHaceFalta() {
@@ -882,7 +893,7 @@ document.getElementById('btnCerrarAvisoAlergenos').addEventListener('click', () 
 });
 
 function mostrarPromoDelDia() {
-  if (!promoActivaActual) return;
+  if (!promosActivas.length) return;
   const hoy = new Date().toISOString().slice(0, 10);
   const ultimaVezVista = localStorage.getItem('camaroncin_promo_vista');
   if (ultimaVezVista === hoy) return;
@@ -893,15 +904,39 @@ function mostrarPromoDelDia() {
     modal.classList.add('hidden');
   };
 
-  renderPromoDentro('promoDiaContenedor', promoActivaActual);
+  renderPromoDentro('promoDiaContenedor', promosActivas[0]);
   modal.classList.remove('hidden');
   document.getElementById('btnCerrarPromoDia').onclick = cerrar;
   document.getElementById('promoDiaContenedor').addEventListener('click', cerrar);
 }
 
+// Botón "Promociones" del menú: si hay una sola activa, la abre directo a pantalla completa;
+// si hay varias, primero muestra una galería de tarjetas para elegir cuál ver.
 function abrirPromoManual() {
-  if (!promoActivaActual) { toast('No hay ninguna promoción activa en este momento.', 'error'); return; }
-  renderPromoDentro('promoManualContenedor', promoActivaActual);
+  if (!promosActivas.length) { toast('No hay ninguna promoción activa en este momento.', 'error'); return; }
+  if (promosActivas.length === 1) { abrirPromoDetalle(promosActivas[0]); return; }
+
+  const grid = document.getElementById('promoGaleriaClienteGrid');
+  grid.innerHTML = promosActivas.map((p, i) => `
+    <button type="button" data-i="${i}" class="promoGaleriaCard text-left rounded-2xl overflow-hidden border border-line bg-white shadow-sm">
+      <img src="${p.imagen_url}" class="w-full aspect-[4/5] object-contain bg-black" alt="Promoción" />
+      ${p.descripcion ? `<p class="text-[11.5px] text-ink p-2 leading-snug line-clamp-2">${escapeHtml(p.descripcion)}</p>` : ''}
+    </button>
+  `).join('');
+  grid.querySelectorAll('.promoGaleriaCard').forEach(btn => {
+    btn.addEventListener('click', () => {
+      cerrarPromoGaleria();
+      setTimeout(() => abrirPromoDetalle(promosActivas[Number(btn.dataset.i)]), 200);
+    });
+  });
+  document.getElementById('modalPromoGaleria').classList.remove('hidden');
+  pushNavState();
+}
+function cerrarPromoGaleria() {
+  document.getElementById('modalPromoGaleria').classList.add('hidden');
+}
+function abrirPromoDetalle(promo) {
+  renderPromoDentro('promoManualContenedor', promo);
   document.getElementById('modalPromoManual').classList.remove('hidden');
   document.getElementById('promoManualContenedor').onclick = cerrarPromoManual;
   pushNavState();
@@ -3346,6 +3381,8 @@ document.getElementById('drawerPromoBtn').addEventListener('click', () => {
   setTimeout(abrirPromoManual, 200);
 });
 document.getElementById('btnCerrarPromoManual').addEventListener('click', cerrarPromoManual);
+document.getElementById('btnCerrarPromoGaleria').addEventListener('click', cerrarPromoGaleria);
+document.getElementById('promoGaleriaOverlay').addEventListener('click', cerrarPromoGaleria);
 document.getElementById('closeMisPedidos').onclick = cerrarMisPedidos;
 document.getElementById('misPedidosOverlay').onclick = cerrarMisPedidos;
 document.getElementById('closeMiPerfil').onclick = cerrarMiPerfil;
@@ -3414,6 +3451,10 @@ history.replaceState({ camaroncinNav: true }, '');
 window.addEventListener('popstate', () => {
   if (!document.getElementById('modalPromoManual').classList.contains('hidden')) {
     cerrarPromoManual();
+    return;
+  }
+  if (!document.getElementById('modalPromoGaleria').classList.contains('hidden')) {
+    cerrarPromoGaleria();
     return;
   }
   if (!document.getElementById('mapaUbicacionModal').classList.contains('hidden')) {
@@ -3755,7 +3796,7 @@ document.addEventListener('click', async (e) => {
 
 <!-- ============ MODAL: PROMOCIÓN DEL DÍA (una vez al día, automático) ============ -->
 <div id="modalPromoDia" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center text-center overflow-hidden bg-black">
-  <button id="btnCerrarPromoDia" class="absolute top-5 right-5 w-9 h-9 rounded-full bg-black/40 text-white flex items-center justify-center text-xl leading-none z-10">&times;</button>
+  <button id="btnCerrarPromoDia" class="absolute w-10 h-10 rounded-full bg-white/25 ring-1 ring-white/50 text-white flex items-center justify-center text-2xl leading-none z-10" style="top:max(14px,env(safe-area-inset-top,0px));right:14px;">&times;</button>
   <div id="promoDiaContenedor" class="absolute inset-0 flex flex-col"></div>
 </div>
 
@@ -3772,8 +3813,20 @@ document.addEventListener('click', async (e) => {
 
 <!-- ============ MODAL: PROMOCIÓN (a pedido, desde el menú lateral) ============ -->
 <div id="modalPromoManual" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center text-center overflow-hidden bg-black">
-  <button id="btnCerrarPromoManual" class="absolute top-5 right-5 w-9 h-9 rounded-full bg-black/40 text-white flex items-center justify-center text-xl leading-none z-10">&times;</button>
+  <button id="btnCerrarPromoManual" class="absolute w-10 h-10 rounded-full bg-white/25 ring-1 ring-white/50 text-white flex items-center justify-center text-2xl leading-none z-10" style="top:max(14px,env(safe-area-inset-top,0px));right:14px;">&times;</button>
   <div id="promoManualContenedor" class="absolute inset-0 flex flex-col"></div>
+</div>
+
+<!-- ============ MODAL: GALERÍA DE PROMOCIONES (cuando hay más de una activa) ============ -->
+<div id="modalPromoGaleria" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+  <div id="promoGaleriaOverlay" class="absolute inset-0 bg-black/50"></div>
+  <div class="relative bg-white rounded-t-3xl sm:rounded-3xl w-full sm:w-[480px] max-h-[85vh] flex flex-col">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-line shrink-0">
+      <p class="font-display font-700 text-[16px] text-ink">Promociones</p>
+      <button id="btnCerrarPromoGaleria" class="w-8 h-8 rounded-full bg-line/70 flex items-center justify-center text-lg leading-none shrink-0">&times;</button>
+    </div>
+    <div id="promoGaleriaClienteGrid" class="flex-1 overflow-y-auto min-h-0 p-4 grid grid-cols-2 gap-3"></div>
+  </div>
 </div>
 
 <!-- ============ MODAL: AVISO DE PRIVACIDAD ============ -->

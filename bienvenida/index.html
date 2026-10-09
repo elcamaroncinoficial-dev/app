@@ -27,7 +27,7 @@
     --crema:#FBF6EC;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{height:100%;}
+  html,body{min-height:100%;}
   body{
     font-family:'Inter',-apple-system,sans-serif;
     min-height:100dvh;
@@ -195,6 +195,60 @@
     line-height:1.5;
   }
 
+
+  button.accion{font:inherit; cursor:pointer;}
+  .accion{min-width:0;}
+  .accion-label{text-align:center;}
+  button.red-icono{cursor:pointer; font:inherit; padding:0;}
+
+  /* Hoja de costo de envío */
+  .hoja-fondo{position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(3px); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:60;}
+  .hoja-fondo.abierta{opacity:1; pointer-events:auto;}
+  .hoja{
+    position:fixed; left:0; right:0; bottom:0; margin:0 auto; max-width:480px; max-height:92dvh; overflow-y:auto;
+    background:linear-gradient(180deg,#17285C 0%,#0E1D46 100%);
+    border:1.5px solid rgba(227,177,85,.38); border-bottom:none; border-radius:24px 24px 0 0;
+    padding:10px 20px calc(22px + env(safe-area-inset-bottom,0px));
+    transform:translateY(105%); transition:transform .3s cubic-bezier(.2,.8,.2,1);
+    z-index:61; text-align:left; color:var(--crema);
+  }
+  .hoja.abierta{transform:translateY(0);}
+  .hoja-asa{width:42px; height:4px; border-radius:4px; background:rgba(255,255,255,.28); margin:0 auto 12px;}
+  .hoja-cab{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  .hoja-cab h2{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:20px; line-height:1.2; color:var(--dorado);}
+  .hoja-cerrar{width:34px; height:34px; border-radius:50%; border:1.5px solid rgba(255,255,255,.22); background:rgba(255,255,255,.08); color:var(--crema); font-size:22px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;}
+  .hoja-sub{font-size:13px; opacity:.85; margin:6px 0 14px; line-height:1.4;}
+  .hoja-btn-principal{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:9px; cursor:pointer; font:inherit;
+    font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px; color:#fff; border:none; border-radius:16px; padding:13px 16px;
+    background:linear-gradient(135deg,#FF9843 0%,var(--naranja) 60%,#D96812 100%); box-shadow:0 10px 24px rgba(240,124,29,.35), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .hoja-btn-principal:disabled{opacity:.65; cursor:wait;}
+  .hoja-btn-principal svg{width:20px; height:20px; flex-shrink:0;}
+  .hoja-o{display:flex; align-items:center; gap:10px; margin:14px 0 12px; font-size:11.5px; opacity:.7;}
+  .hoja-o::before,.hoja-o::after{content:''; flex:1; height:1px; background:rgba(255,255,255,.2);}
+  .hoja-form{display:flex; gap:8px;}
+  .hoja-form input{
+    flex:1; min-width:0; font:inherit; font-size:16px; color:var(--crema); background:rgba(255,255,255,.08);
+    border:1.5px solid rgba(255,255,255,.22); border-radius:14px; padding:11px 13px; outline:none;
+  }
+  .hoja-form input::placeholder{color:rgba(251,246,236,.5);}
+  .hoja-form input:focus{border-color:var(--dorado);}
+  .hoja-form button{
+    cursor:pointer; font:inherit; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; color:var(--crema);
+    background:rgba(227,177,85,.2); border:1.5px solid rgba(227,177,85,.5); border-radius:14px; padding:0 16px;
+  }
+  .hoja-form button:disabled{opacity:.6; cursor:wait;}
+  .hoja-res{margin-top:14px; min-height:0;}
+  .res-ok{background:linear-gradient(160deg,rgba(255,255,255,.12),rgba(255,255,255,.05)); border:1.5px solid rgba(227,177,85,.45); border-radius:18px; padding:14px 16px; text-align:center;}
+  .res-precio{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:44px; line-height:1; color:var(--dorado);}
+  .res-km{font-size:13.5px; margin-top:6px;}
+  .res-nota{font-size:11px; opacity:.7; margin-top:8px; line-height:1.4;}
+  .res-aviso{font-size:12px; margin-top:8px; color:#FFD9A8; line-height:1.4;}
+  .res-pedir{display:inline-flex; align-items:center; justify-content:center; gap:6px; margin-top:12px; width:100%; text-decoration:none; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14.5px; color:#fff; border-radius:14px; padding:11px 14px; background:linear-gradient(135deg,#FF9843 0%,var(--naranja) 60%,#D96812 100%);}
+  .res-error{background:rgba(255,120,90,.12); border:1.5px solid rgba(255,140,110,.45); border-radius:14px; padding:11px 13px; font-size:13px; line-height:1.4;}
+  .hoja-tarifas{margin-top:14px; font-size:11px; opacity:.6; text-align:center; line-height:1.5;}
+
   @media (min-width:700px){
     body{
       justify-content:center;
@@ -265,6 +319,12 @@
       </span>
       <span class="accion-label">Llamar</span>
     </a>
+    <button type="button" class="accion" onclick="abrirHojaEnvio()" aria-haspopup="dialog">
+      <span class="accion-icono">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>
+      </span>
+      <span class="accion-label">Costo envío</span>
+    </button>
   </div>
 
   <p class="social-label">Síguenos en redes sociales</p>
@@ -275,14 +335,34 @@
     <a href="https://www.tiktok.com/@user431553485?_r=1&_t=ZS-99x8ykYzI1N" target="_blank" rel="noopener" class="red-icono" aria-label="TikTok">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 3c.3 1.9 1.6 3.4 3.5 3.8V9.4c-1.3-.1-2.5-.5-3.5-1.2v6.4a5 5 0 1 1-4-4.9v2.6a2.4 2.4 0 1 0 1.7 2.3V3h2.3z"/></svg>
     </a>
+    <button type="button" class="red-icono" onclick="compartirPagina()" aria-label="Compartir esta página" title="Compartir">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.7"/><circle cx="6" cy="12" r="2.7"/><circle cx="18" cy="19" r="2.7"/><path d="M8.4 10.7 15.6 6.6M8.4 13.3l7.2 4.1"/></svg>
+    </button>
   </div>
 
-  <button class="compartir" onclick="compartirPagina()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.7"/><circle cx="6" cy="12" r="2.7"/><circle cx="18" cy="19" r="2.7"/><path d="M8.4 10.7 15.6 6.6M8.4 13.3l7.2 4.1"/></svg>
-    Compartir
-  </button>
 
   <p class="pie">Amado Nervo #58, Los Reyes, Tultitlán<br>Miércoles a sábado 12–19 hrs · Domingo y lunes 12–18 hrs</p>
+</div>
+
+<div class="hoja-fondo" id="hojaFondo" onclick="cerrarHojaEnvio()"></div>
+<div class="hoja" id="hojaEnvio" role="dialog" aria-modal="true" aria-labelledby="hojaEnvioTitulo" aria-hidden="true">
+  <div class="hoja-asa"></div>
+  <div class="hoja-cab">
+    <h2 id="hojaEnvioTitulo">Costo de envío</h2>
+    <button type="button" class="hoja-cerrar" onclick="cerrarHojaEnvio()" aria-label="Cerrar">&times;</button>
+  </div>
+  <p class="hoja-sub">Calcula cuánto cuesta el envío a tu domicilio.</p>
+  <button type="button" class="hoja-btn-principal" id="btnUsarUbicacion" onclick="calcularConGps()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7.5"/></svg>
+    Usar mi ubicación
+  </button>
+  <div class="hoja-o"><span>o escribe tu dirección</span></div>
+  <form class="hoja-form" onsubmit="calcularConTexto(event)">
+    <input id="envioDireccion" type="text" placeholder="Calle, número y colonia" autocomplete="street-address" enterkeyhint="search" />
+    <button type="submit" id="btnCalcularTexto">Calcular</button>
+  </form>
+  <div id="envioResultado" class="hoja-res" aria-live="polite"></div>
+  <p class="hoja-tarifas">Hasta 2 km $40 · 3 km $60 · 4 km $70 · más de 4 km $80</p>
 </div>
 
 <div class="toast" id="toast">Link copiado</div>
@@ -304,6 +384,111 @@ function mostrarToast(){
   const t = document.getElementById('toast');
   t.classList.add('mostrar');
   setTimeout(()=>t.classList.remove('mostrar'), 2200);
+}
+
+// ---------- Costo de envío (misma regla y misma ubicación del negocio que la app de pedidos) ----------
+const UBICACION_DEFECTO = { lat: 19.6403, lng: -99.1700 }; // respaldo: Los Reyes, Tultitlán (igual que la app)
+const KM_AVISO_LEJOS = 6; // arriba de esto solo se agrega un aviso para confirmar por WhatsApp
+let UBICACION_NEGOCIO = null;
+
+function distanciaKm(lat1, lng1, lat2, lng2) {
+  const R = 6371, rad = (g) => g * Math.PI / 180;
+  const dLat = rad(lat2 - lat1), dLng = rad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+function costoEnvioPorKm(km) {   // idéntica a calcularCostoEnvioPorDistancia() de la app
+  if (km <= 2) return 40;
+  if (km <= 3) return 60;
+  if (km <= 4) return 70;
+  return 80;
+}
+async function obtenerUbicacionNegocio() {
+  if (UBICACION_NEGOCIO) return UBICACION_NEGOCIO;
+  try {
+    const c = localStorage.getItem('camaroncin_ubicacion_negocio_v1');   // misma caché que usa la app
+    if (c) { UBICACION_NEGOCIO = JSON.parse(c); return UBICACION_NEGOCIO; }
+  } catch (e) {}
+  try {
+    const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent('Amado Nervo 58, Los Reyes, Tultitlán, Estado de México, 54900, México') + '&format=json&limit=1');
+    const d = await r.json();
+    if (d && d[0]) {
+      UBICACION_NEGOCIO = { lat: Number(d[0].lat), lng: Number(d[0].lon) };
+      try { localStorage.setItem('camaroncin_ubicacion_negocio_v1', JSON.stringify(UBICACION_NEGOCIO)); } catch (e) {}
+      return UBICACION_NEGOCIO;
+    }
+  } catch (e) {}
+  UBICACION_NEGOCIO = UBICACION_DEFECTO;
+  return UBICACION_NEGOCIO;
+}
+
+const elHoja = () => document.getElementById('hojaEnvio');
+let _foco = null;
+function abrirHojaEnvio() {
+  _foco = document.activeElement;
+  document.getElementById('hojaFondo').classList.add('abierta');
+  const h = elHoja(); h.classList.add('abierta'); h.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarHojaEnvio() {
+  document.getElementById('hojaFondo').classList.remove('abierta');
+  const h = elHoja(); h.classList.remove('abierta'); h.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  if (_foco && _foco.focus) _foco.focus();
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarHojaEnvio(); });
+
+function mostrarErrorEnvio(texto) {
+  document.getElementById('envioResultado').innerHTML = '<div class="res-error"></div>';
+  document.querySelector('#envioResultado .res-error').textContent = texto;
+}
+function mostrarResultadoEnvio(km) {
+  const costo = costoEnvioPorKm(km);
+  let kmR = Math.round(km * 10) / 10;                       // redondeo normal a 1 decimal...
+  if (costoEnvioPorKm(kmR) < costo) kmR = Math.ceil(km * 10) / 10;   // ...salvo que mostraría "2.0 km" cobrando la tarifa de más de 2 km
+  const kmTexto = kmR.toFixed(1);
+  const aviso = km > KM_AVISO_LEJOS ? '<p class="res-aviso">Por la distancia, confirma por WhatsApp si llegamos a tu zona.</p>' : '';
+  document.getElementById('envioResultado').innerHTML =
+    '<div class="res-ok">' +
+      '<div class="res-precio">$' + costo + '</div>' +
+      '<p class="res-km">Estás a ~' + kmTexto + ' km de El Camaroncín</p>' + aviso +
+      '<p class="res-nota">Cálculo aproximado, en línea recta. El costo final se confirma al hacer tu pedido.</p>' +
+      '<a class="res-pedir" href="/">Hacer un pedido ›</a>' +
+    '</div>';
+}
+async function calcularDesde(lat, lng) {
+  const neg = await obtenerUbicacionNegocio();
+  mostrarResultadoEnvio(distanciaKm(lat, lng, neg.lat, neg.lng));
+}
+function calcularConGps() {
+  const btn = document.getElementById('btnUsarUbicacion');
+  if (!navigator.geolocation) { mostrarErrorEnvio('Tu navegador no permite usar la ubicación. Escribe tu dirección abajo.'); return; }
+  btn.disabled = true; const txt = btn.lastChild.textContent; btn.lastChild.textContent = ' Buscando tu ubicación...';
+  const listo = () => { btn.disabled = false; btn.lastChild.textContent = txt; };
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => { try { await calcularDesde(pos.coords.latitude, pos.coords.longitude); } finally { listo(); } },
+    (err) => {
+      listo();
+      mostrarErrorEnvio(err && err.code === 1
+        ? 'No tenemos permiso para ver tu ubicación. Actívalo en tu navegador o escribe tu dirección abajo.'
+        : 'No pudimos obtener tu ubicación. Intenta de nuevo o escribe tu dirección abajo.');
+    },
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+  );
+}
+async function calcularConTexto(e) {
+  e.preventDefault();
+  const q = document.getElementById('envioDireccion').value.trim();
+  if (q.length < 4) { mostrarErrorEnvio('Escribe tu calle, número y colonia.'); return; }
+  const btn = document.getElementById('btnCalcularTexto'); btn.disabled = true; btn.textContent = '...';
+  try {
+    const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) + '&format=json&limit=1&countrycodes=mx&accept-language=es');
+    const d = await r.json();
+    if (d && d[0]) await calcularDesde(Number(d[0].lat), Number(d[0].lon));
+    else mostrarErrorEnvio('No encontramos esa dirección. Agrega la colonia o usa tu ubicación.');
+  } catch (err) {
+    mostrarErrorEnvio('No pudimos buscar esa dirección ahora. Intenta de nuevo o usa tu ubicación.');
+  } finally { btn.disabled = false; btn.textContent = 'Calcular'; }
 }
 </script>
 

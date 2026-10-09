@@ -324,7 +324,7 @@
       <span class="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center shrink-0 text-[18px]">🎉</span>
       <div>
        <p class="font-display font-600 text-[14px]">Promociones</p>
-       <p class="text-[12px] text-muted mt-0.5">Se le muestra al cliente máximo 1 vez al día, más el botón "Promociones" del menú</p>
+       <p class="text-[12px] text-muted mt-0.5">Puedes activar varias a la vez. La más reciente se le muestra al cliente máximo 1 vez al día; el botón "Promociones" del menú muestra todas las activas (como galería si hay más de una)</p>
       </div>
      </div>
      <label class="relative inline-flex items-center cursor-pointer shrink-0" title="Apagar esto oculta cualquier promoción, aunque tengas una marcada como activa">
@@ -5906,11 +5906,12 @@ function renderPromoGaleria() {
  el.querySelectorAll('.promoActivarBtn').forEach(btn => {
   btn.addEventListener('click', async () => {
    if (DEMO_MODE) { demoBloqueado(); return; }
+   const promo = promoGaleriaCache.find(p => p.id === btn.dataset.id);
+   const nuevoValor = !(promo && promo.activa);
    btn.disabled = true;
-   await supabase.from('promociones').update({ activa: false }).neq('id', btn.dataset.id);
-   const { error } = await supabase.from('promociones').update({ activa: true }).eq('id', btn.dataset.id);
+   const { error } = await supabase.from('promociones').update({ activa: nuevoValor }).eq('id', btn.dataset.id);
    btn.disabled = false;
-   if (error) { alert('No se pudo activar: ' + error.message); return; }
+   if (error) { alert('No se pudo actualizar: ' + error.message); return; }
    cargarPromoGaleria();
   });
  });
@@ -6352,41 +6353,48 @@ document.getElementById('npPlatilloGuardarBtn').addEventListener('click', async 
 
 function productoRowAdminHtml(p, fotoCat) {
  return `
-  <div id="prodRow-${p.id}" class="bg-white rounded-2xl border border-line shadow-sm p-3.5 ${!p.disponible ? 'opacity-50' : ''} ${p.descontinuado ? 'opacity-40 grayscale' : ''}">
-   <div class="flex items-start gap-2.5 mb-2.5">
-    <button type="button" data-id="${p.id}" title="Tocar para cambiar la foto" class="cambiarFotoBtn relative w-10 h-10 rounded-xl shrink-0 flex items-center justify-center bg-[#F4F2EE] text-ink font-display font-700 text-[15px] overflow-hidden">
+  <div id="prodRow-${p.id}" class="bg-white rounded-2xl border border-line shadow-sm p-4 ${!p.disponible ? 'opacity-50' : ''} ${p.descontinuado ? 'opacity-40 grayscale' : ''}">
+   <div class="flex items-start gap-3 mb-3">
+    <button type="button" data-id="${p.id}" title="Tocar para cambiar la foto" class="cambiarFotoBtn relative w-16 h-16 rounded-xl shrink-0 flex items-center justify-center bg-[#F4F2EE] text-ink font-display font-700 text-[22px] overflow-hidden">
      ${p.imagen_url ? `<img src="${p.imagen_url}" alt="${p.nombre}" class="w-full h-full object-cover" />` : fotoCat ? `<img src="${fotoCat}" alt="${p.nombre}" class="w-full h-full object-cover" />` : p.nombre.charAt(0).toUpperCase()}
-     <span class="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-forest text-white flex items-center justify-center" style="font-size:9px;">📷</span>
+     <span class="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-forest text-white flex items-center justify-center border-2 border-white" style="font-size:13px;">📷</span>
     </button>
     <input type="file" accept="image/*" data-id="${p.id}" style="display:none" class="cambiarFotoInput" />
-    <p class="font-display font-600 text-[14px] leading-snug flex-1 min-w-0">${p.nombre}${p.descontinuado ? ' <span class="text-[10px] font-700 text-accent align-middle">· Descontinuado</span>' : ''}</p>
+    <div class="flex-1 min-w-0">
+     <div class="relative">
+      <textarea data-id="${p.id}" rows="1" class="nombreInput block font-display font-600 text-[17px] leading-snug w-full rounded-lg border border-line focus:border-forest px-2.5 py-1.5 pr-8 bg-[#FAFAF8] resize-none overflow-hidden">${escapeHtml(p.nombre)}</textarea>
+      <span class="absolute right-2 top-2.5 text-[13px] text-muted pointer-events-none">✏️</span>
+     </div>
+     ${p.descontinuado ? '<span class="text-[11px] font-700 text-accent">· Descontinuado</span>' : ''}
+    </div>
    </div>
-   <div class="flex items-center gap-2 mb-2.5 flex-wrap">
-    <button data-id="${p.id}" data-disp="${p.disponible}" class="dispToggle w-9 h-6 rounded-full relative shrink-0 ${p.disponible ? 'bg-forest' : 'bg-line'}">
-     <span class="absolute top-0.5 ${p.disponible ? 'right-0.5' : 'left-0.5'} w-5 h-5 rounded-full bg-white block shadow-sm"></span>
+   <textarea data-id="${p.id}" placeholder="Sin descripción — toca para agregar una" rows="2" class="descripcionInput block w-full text-[14px] text-muted rounded-lg border border-line focus:border-forest px-2.5 py-2 mb-3 resize-none overflow-hidden bg-[#FAFAF8]">${escapeHtml(p.descripcion || '')}</textarea>
+   <div class="flex items-center gap-2.5 mb-3 flex-wrap">
+    <button data-id="${p.id}" data-disp="${p.disponible}" class="dispToggle rounded-full relative shrink-0 ${p.disponible ? 'bg-forest' : 'bg-line'}" style="width:52px;height:32px;">
+     <span class="absolute top-0.5 ${p.disponible ? 'right-0.5' : 'left-0.5'} w-7 h-7 rounded-full bg-white block shadow-sm"></span>
     </button>
-    <button data-id="${p.id}" data-dest="${p.destacado}" title="Destacar en inicio (favoritos de la casa)" class="destacadoToggle w-8 h-8 rounded-xl shrink-0 flex items-center justify-center text-[16px] ${p.destacado ? 'bg-gold/15 text-gold' : 'bg-line/50 text-muted'}">★</button>
-    <button data-id="${p.id}" data-desc="${p.descontinuado}" title="Descontinuar (lo quita del menú por completo, ya no lo ve el cliente)" ${p.descontinuado ? 'style="display:none"' : ''} class="descontinuarToggle w-8 h-8 rounded-xl shrink-0 flex items-center justify-center bg-line/50 text-muted">
-     <span class="w-[15px] h-[15px] pointer-events-none">${icon('trash')}</span>
+    <button data-id="${p.id}" data-dest="${p.destacado}" title="Destacar en inicio (favoritos de la casa)" class="destacadoToggle w-11 h-11 rounded-xl shrink-0 flex items-center justify-center text-[22px] ${p.destacado ? 'bg-gold/15 text-gold' : 'bg-line/50 text-muted'}">★</button>
+    <button data-id="${p.id}" data-desc="${p.descontinuado}" title="Descontinuar (lo quita del menú por completo, ya no lo ve el cliente)" ${p.descontinuado ? 'style="display:none"' : ''} class="descontinuarToggle w-11 h-11 rounded-xl shrink-0 flex items-center justify-center bg-line/50 text-muted">
+     <span class="w-[20px] h-[20px] pointer-events-none">${icon('trash')}</span>
     </button>
-    <button data-id="${p.id}" data-desc="${p.descontinuado}" title="Reactivar en el menú" ${p.descontinuado ? '' : 'style="display:none"'} class="descontinuarToggle h-8 px-2.5 rounded-xl shrink-0 flex items-center gap-1 bg-forest/15 text-forest">
-     <span class="w-[13px] h-[13px] pointer-events-none">${icon('check')}</span>
-     <span class="text-[11px] font-display font-600 pointer-events-none">Reactivar</span>
+    <button data-id="${p.id}" data-desc="${p.descontinuado}" title="Reactivar en el menú" ${p.descontinuado ? '' : 'style="display:none"'} class="descontinuarToggle h-11 px-3.5 rounded-xl shrink-0 flex items-center gap-1.5 bg-forest/15 text-forest">
+     <span class="w-[17px] h-[17px] pointer-events-none">${icon('check')}</span>
+     <span class="text-[13px] font-display font-600 pointer-events-none">Reactivar</span>
     </button>
-    <button data-id="${p.id}" data-nombre="${p.nombre}" title="Administrar disponibilidad de tamaños/variantes" class="opcionesDisponibilidadBtn w-8 h-8 rounded-xl shrink-0 flex items-center justify-center bg-line/50 text-muted">
-     <span class="w-[15px] h-[15px] pointer-events-none">${icon('menu')}</span>
+    <button data-id="${p.id}" data-nombre="${p.nombre}" title="Administrar disponibilidad de tamaños/variantes" class="opcionesDisponibilidadBtn w-11 h-11 rounded-xl shrink-0 flex items-center justify-center bg-line/50 text-muted">
+     <span class="w-[20px] h-[20px] pointer-events-none">${icon('menu')}</span>
     </button>
    </div>
-   <div class="flex gap-2 flex-wrap items-end">
+   <div class="flex gap-3 flex-wrap items-end">
     <div>
-     <label class="block text-[9px] text-muted mb-0.5">precio</label>
-     <input data-id="${p.id}" type="number" step="0.5" value="${p.precio_base}" class="precioInput text-[13px] rounded-lg border border-line px-2 py-1 w-16 " />
+     <label class="block text-[12px] text-muted mb-1">precio</label>
+     <input data-id="${p.id}" type="number" step="0.5" value="${p.precio_base}" class="precioInput text-[16px] font-600 rounded-lg border border-line focus:border-forest px-2.5 py-2 w-24 " />
     </div>
     <div>
-     <label class="block text-[9px] text-muted mb-0.5">costo</label>
-     <input data-id="${p.id}" type="number" step="0.5" value="${p.costo || 0}" class="costoInput text-[13px] rounded-lg border border-line px-2 py-1 w-16 " />
+     <label class="block text-[12px] text-muted mb-1">costo</label>
+     <input data-id="${p.id}" type="number" step="0.5" value="${p.costo || 0}" class="costoInput text-[16px] font-600 rounded-lg border border-line focus:border-forest px-2.5 py-2 w-24 " />
     </div>
-    <span class="text-[11px] text-forest font-semibold pb-1 whitespace-nowrap">${marginPct(p.precio_base, p.costo)}% margen</span>
+    <span class="text-[13px] text-forest font-semibold pb-2 whitespace-nowrap">${marginPct(p.precio_base, p.costo)}% margen</span>
    </div>
   </div>
  `;
@@ -6531,6 +6539,52 @@ function renderMenuAdminList(categorias, productos) {
    if (marginSpan && prod) marginSpan.textContent = `${marginPct(prod.precio_base, prod.costo)}% margen`;
   });
  });
+
+ document.querySelectorAll('.nombreInput').forEach(inp => {
+  prepararCampoAutoAlto(inp);
+  inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } }); // el nombre es de un solo párrafo
+  inp.addEventListener('change', async () => {
+   if (DEMO_MODE) { demoBloqueado(); return; }
+   const val = inp.value.trim();
+   if (!val) { alert('El nombre no puede quedar vacío.'); inp.value = menuAdminProductosCache.find(p => p.id === inp.dataset.id)?.nombre || ''; return; }
+   const { error } = await supabase.from('productos').update({ nombre: val }).eq('id', inp.dataset.id);
+   if (error) { alert('No se pudo actualizar el nombre: ' + error.message); return; }
+   const prod = menuAdminProductosCache.find(p => p.id === inp.dataset.id);
+   if (prod) prod.nombre = val;
+  });
+ });
+
+ document.querySelectorAll('.descripcionInput').forEach(inp => {
+  prepararCampoAutoAlto(inp);
+  inp.addEventListener('change', async () => {
+   if (DEMO_MODE) { demoBloqueado(); return; }
+   const val = inp.value.trim();
+   const { error } = await supabase.from('productos').update({ descripcion: val || null }).eq('id', inp.dataset.id);
+   if (error) { alert('No se pudo actualizar la descripción: ' + error.message); return; }
+   const prod = menuAdminProductosCache.find(p => p.id === inp.dataset.id);
+   if (prod) prod.descripcion = val || null;
+  });
+ });
+}
+
+// Campos de texto que crecen según lo que se escribe (para que nunca se corte un nombre o una descripción largos).
+function ajustarAlturaCampo(el) {
+ if (!el || el.getClientRects().length === 0) return; // oculto: se ajusta cuando se vuelva visible (ver ResizeObserver)
+ el.style.height = 'auto';
+ el.style.height = (el.scrollHeight + (el.offsetHeight - el.clientHeight)) + 'px';
+}
+const _roCamposAutoAlto = (typeof ResizeObserver !== 'undefined')
+ ? new ResizeObserver(entradas => entradas.forEach(en => {
+    const el = en.target, w = Math.round(en.contentRect.width);
+    if (!w || el._ultimoAncho === w) return;
+    el._ultimoAncho = w;
+    ajustarAlturaCampo(el);
+   }))
+ : null;
+function prepararCampoAutoAlto(el) {
+ ajustarAlturaCampo(el);
+ el.addEventListener('input', () => ajustarAlturaCampo(el));
+ if (_roCamposAutoAlto) _roCamposAutoAlto.observe(el);
 }
 
 function marginPct(precio, costo) {
