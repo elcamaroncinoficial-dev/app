@@ -685,6 +685,31 @@ let PRODUCTOS = [];
 let CATEGORIAS = [];
 let GRUPOS = {};
 let PROD_GRUPOS = {};
+
+// Texto corto de las selecciones de un platillo. En los grupos de ingredientes ("con todo") dice "Con todo"
+// cuando va completo, o "Sin X, Y" cuando el cliente quitó algo; en el resto lista lo que eligió.
+function resumenConTodo(g, nombresElegidos) {
+  const disponibles = g.opciones.filter(o => o.disponible !== false).map(o => o.nombre);
+  const quitadas = disponibles.filter(n => !nombresElegidos.includes(n));
+  return quitadas.length ? 'Sin ' + quitadas.join(', ') : 'Con todo';
+}
+function partesModificadores(productoId, mods) {
+  const gruposProd = (PROD_GRUPOS[productoId] || []).map(gid => GRUPOS[gid]).filter(Boolean);
+  const elegidasPorGrupo = {}; const orden = [];
+  (mods || []).forEach(m => {
+    if (!elegidasPorGrupo[m.grupo]) { elegidasPorGrupo[m.grupo] = []; orden.push(m.grupo); }
+    elegidasPorGrupo[m.grupo].push(m.opcion);
+  });
+  const partes = [];
+  orden.forEach(nombreGrupo => {
+    const g = gruposProd.find(x => x.nombre === nombreGrupo);
+    if (g && g.conTodo) partes.push(resumenConTodo(g, elegidasPorGrupo[nombreGrupo]));
+    else partes.push(...elegidasPorGrupo[nombreGrupo]);
+  });
+  // grupo de ingredientes donde el cliente desmarcó todo: también se avisa a la cocina
+  gruposProd.filter(g => g.conTodo && !elegidasPorGrupo[g.nombre]).forEach(g => partes.push(resumenConTodo(g, [])));
+  return partes;
+}
 let ZONAS = [];
 let cart = [];
 let gpsCoords = null; // {lat, lng} si el cliente usó el botón de ubicación
@@ -1920,13 +1945,14 @@ function abrirProducto(id, editItem = null) {
     const set = new Set();
     g.opciones.forEach((o, i) => {
       const marcadoPrevio = editItem ? seleccionPrevia.has(g.nombre + '||' + o.nombre) : null;
-      const marcadoDefault = editItem ? false : (g.tipo === 'unico' ? i === 0 : false);
+      const marcadoDefault = editItem ? false : (g.tipo === 'unico' ? i === 0 : (g.conTodo && o.disponible !== false));
       if (marcadoPrevio ?? marcadoDefault) set.add(o.id);
     });
     seleccion[g.id] = set;
   });
 
   let pasoActual = 0;
+  let desdeResumen = false;   // true cuando el cliente entró a corregir un paso desde el resumen final
   let qty = editItem ? editItem.cantidad : 1;
   const body = document.getElementById('productModalBody');
 
@@ -1963,14 +1989,14 @@ function abrirProducto(id, editItem = null) {
     const inputType = g.tipo === 'unico' ? 'radio' : 'checkbox';
     if (o.disponible === false) {
       return `
-        <label class="modOptionRow inline-flex items-center gap-1.5 shrink-0 px-4 py-2.5 rounded-full border-2 border-line bg-line/30 text-muted line-through opacity-60 cursor-not-allowed">
+        <label class="modOptionRow inline-flex items-center gap-1.5 max-w-full text-left px-4 py-2.5 rounded-full border-2 border-line bg-line/30 text-muted line-through opacity-60 cursor-not-allowed">
           <span class="text-[14px] font-medium">${o.nombre}</span>
           <span class="text-[11px] font-medium not-italic no-underline">(agotado)</span>
         </label>
       `;
     }
     return `
-      <label class="modOptionRow inline-flex items-center gap-1.5 shrink-0 px-4 py-2.5 rounded-full border-2 cursor-pointer transition ${marcado ? 'border-forest bg-forest text-white shadow-sm' : 'border-line bg-white text-ink'}">
+      <label class="modOptionRow inline-flex items-center gap-1.5 max-w-full text-left px-4 py-2.5 rounded-full border-2 cursor-pointer transition ${marcado ? 'border-forest bg-forest text-white shadow-sm' : 'border-line bg-white text-ink'}">
         <input type="${inputType}" data-grupo-id="${g.id}" data-opcion-id="${o.id}" ${marcado ? 'checked' : ''} class="sr-only" />
         <span class="text-[14px] font-medium">${o.nombre}</span>
         ${Number(o.precio_extra) > 0 ? `<span class="text-[12px] font-display font-700 ${marcado ? 'text-white/90' : 'text-forest'}">+${fmt(o.precio_extra)}</span>` : ''}
@@ -2005,15 +2031,24 @@ function abrirProducto(id, editItem = null) {
 
       ${esUltimo ? `
         <div class="space-y-2.5 mb-5">
-          ${grupos.map(g => {
+          ${pasos.filter(ps => ps.tipo === 'grupo').map(ps => {
+            const g = ps.grupo;
+            const idxPaso = pasos.indexOf(ps);
+            let textoElegido;
             if (g.tipo === 'cantidad') {
               const elegidas = g.opciones.filter(o => (seleccion[g.id][o.id] || 0) > 0);
               if (!elegidas.length) return '';
-              return `<p class="text-[13px] text-muted"><span class="text-ink font-medium">${g.nombre}:</span> ${elegidas.map(o => `${seleccion[g.id][o.id]}x ${o.nombre}`).join(', ')}</p>`;
+              textoElegido = elegidas.map(o => `${seleccion[g.id][o.id]}x ${o.nombre}`).join(', ');
+            } else {
+              const elegidas = g.opciones.filter(o => seleccion[g.id].has(o.id));
+              if (g.conTodo) {
+                textoElegido = resumenConTodo(g, elegidas.map(o => o.nombre));
+              } else {
+                if (!elegidas.length) return '';
+                textoElegido = elegidas.map(o => o.nombre).join(', ');
+              }
             }
-            const elegidas = g.opciones.filter(o => seleccion[g.id].has(o.id));
-            if (!elegidas.length) return '';
-            return `<p class="text-[13px] text-muted"><span class="text-ink font-medium">${g.nombre}:</span> ${elegidas.map(o => o.nombre).join(', ')}</p>`;
+            return `<button type="button" data-ir-paso="${idxPaso}" class="w-full flex items-start justify-between gap-3 text-left text-[13px] text-muted rounded-xl border border-line bg-white px-3 py-2.5 active:bg-cream"><span class="min-w-0"><span class="text-ink font-medium">${g.nombre}:</span> ${textoElegido}</span><span class="shrink-0 text-forest text-[12px] font-semibold">Cambiar</span></button>`;
           }).join('')}
         </div>
         <div class="flex items-center justify-between mb-5">
@@ -2028,9 +2063,10 @@ function abrirProducto(id, editItem = null) {
           <span>${editItem ? 'Guardar cambios' : 'Agregar al pedido'}</span>
           <span>${fmtPrecio(total)}</span>
         </button>
+        ${pasos.length > 1 ? `<button type="button" id="btnVolverPasos" class="w-full text-center text-forest text-[13px] font-semibold py-3">← Volver a los pasos</button>` : ''}
         ${editItem ? `<button type="button" id="eliminarDelModal" class="w-full text-center text-accent text-[13px] font-medium py-3">Quitar del pedido</button>` : ''}
       ` : `
-        <fieldset class="mb-6">
+        <fieldset class="mb-6 min-w-0">
           <legend class="font-display font-600 text-[15px] mb-3">
             ${paso.grupo.nombre}${
               paso.grupo.tipo === 'cantidad'
@@ -2055,7 +2091,7 @@ function abrirProducto(id, editItem = null) {
         </fieldset>
         <div class="flex gap-3">
           ${pasoActual > 0 ? `<button type="button" id="btnAtras" class="w-14 h-14 rounded-2xl bg-cream border border-line flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ''}
-          <button type="button" id="btnSiguiente" class="flex-1 btn-accent-gradient text-white font-display font-600 rounded-2xl py-4 text-[14.5px] shadow-md">Siguiente</button>
+          <button type="button" id="btnSiguiente" class="flex-1 btn-accent-gradient text-white font-display font-600 rounded-2xl py-4 text-[14.5px] shadow-md">${desdeResumen ? 'Listo · volver al resumen' : 'Siguiente'}</button>
         </div>
       `}
     `;
@@ -2114,7 +2150,7 @@ function abrirProducto(id, editItem = null) {
         };
       }
       const btnAtras = document.getElementById('btnAtras');
-      if (btnAtras) btnAtras.onclick = () => { pasoActual--; render(); };
+      if (btnAtras) btnAtras.onclick = () => { desdeResumen = false; pasoActual--; render(); };
       document.getElementById('btnSiguiente').onclick = () => {
         if (paso.grupo.tipo === 'cantidad' && totalCantidad(paso.grupo) !== paso.grupo.cantidadTotal) {
           toast(`Elige ${paso.grupo.cantidadTotal} en total en "${paso.grupo.nombre}" para continuar`, 'error');
@@ -2128,9 +2164,15 @@ function abrirProducto(id, editItem = null) {
           toast(`Elige una opción en "${paso.grupo.nombre}" para continuar`, 'error');
           return;
         }
-        pasoActual++; render();
+        if (desdeResumen) { desdeResumen = false; pasoActual = pasos.length - 1; } else { pasoActual++; }
+        render();
       };
     } else {
+      body.querySelectorAll('[data-ir-paso]').forEach(b => {
+        b.onclick = () => { desdeResumen = true; pasoActual = Number(b.dataset.irPaso); render(); };
+      });
+      const btnVolverPasos = document.getElementById('btnVolverPasos');
+      if (btnVolverPasos) btnVolverPasos.onclick = () => { desdeResumen = false; pasoActual = Math.max(0, pasos.length - 2); render(); };
       document.getElementById('qtyMinus').onclick = () => { if (qty > 1) qty--; render(); };
       document.getElementById('qtyPlus').onclick = () => { qty++; render(); };
       if (editItem) {
@@ -2329,7 +2371,7 @@ function renderCart() {
             <p class="font-display font-600 text-[14.5px]">${item.cantidad}× ${item.nombre}</p>
             <button data-cartid="${item.cartId}" class="removeItem text-muted hover:text-accent text-lg leading-none shrink-0">&times;</button>
           </div>
-          ${item.modificadores.length ? `<p class="text-[12px] text-muted mt-1">${item.modificadores.map(m => m.opcion).join(' · ')}</p>` : ''}
+          ${(() => { const partes = partesModificadores(item.producto_id, item.modificadores); return partes.length ? `<p class="text-[12px] text-muted mt-1">${partes.join(' · ')}</p>` : ''; })()}
           <div class="flex items-center justify-between mt-2">
             <p class="font-display text-[13px] font-bold">${fmtPrecio(item.subtotal)}</p>
             <span class="text-[11px] text-forest font-medium flex items-center gap-1">
@@ -3146,7 +3188,8 @@ async function confirmarPedido() {
     let hayPrecioPendiente = false;
     cart.forEach(i => {
       msg += `▪️ ${i.cantidad}× ${i.nombre}`;
-      if (i.modificadores.length) msg += ` (${i.modificadores.map(m => m.opcion).join(', ')})`;
+      const partesMod = partesModificadores(i.producto_id, i.modificadores);
+      if (partesMod.length) msg += ` (${partesMod.join(', ')})`;
       msg += ` — ${fmtPrecio(i.subtotal)}\n`;
       if (i.subtotal === 0) hayPrecioPendiente = true;
     });

@@ -201,51 +201,52 @@
   .accion-label{text-align:center;}
   button.red-icono{cursor:pointer; font:inherit; padding:0;}
 
-  /* Hoja de costo de envío */
-  .hoja-fondo{position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(3px); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:60;}
+  /* Hoja de costo de envío — mismo lenguaje que el resto de la página: vidrio oscuro, íconos dorados, naranja solo en la acción principal */
+  .hoja-fondo{position:fixed; inset:0; background:rgba(4,7,18,.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:60;}
   .hoja-fondo.abierta{opacity:1; pointer-events:auto;}
   .hoja{
     position:fixed; left:0; right:0; bottom:0; margin:0 auto; max-width:480px; max-height:92dvh; overflow-y:auto;
-    background:linear-gradient(180deg,#17285C 0%,#0E1D46 100%);
-    border:1.5px solid rgba(227,177,85,.38); border-bottom:none; border-radius:24px 24px 0 0;
-    padding:10px 20px calc(22px + env(safe-area-inset-bottom,0px));
+    background:linear-gradient(180deg, rgba(24,36,80,.94) 0%, rgba(9,16,40,.97) 100%);
+    backdrop-filter:blur(18px) saturate(1.2); -webkit-backdrop-filter:blur(18px) saturate(1.2);
+    border:1.5px solid rgba(255,255,255,.2); border-bottom:none; border-radius:26px 26px 0 0;
+    box-shadow:0 -18px 50px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.12);
+    padding:10px 18px calc(22px + env(safe-area-inset-bottom,0px));
     transform:translateY(105%); transition:transform .3s cubic-bezier(.2,.8,.2,1);
     z-index:61; text-align:left; color:var(--crema);
   }
   .hoja.abierta{transform:translateY(0);}
-  .hoja-asa{width:42px; height:4px; border-radius:4px; background:rgba(255,255,255,.28); margin:0 auto 12px;}
-  .hoja-cab{display:flex; align-items:center; justify-content:space-between; gap:12px;}
-  .hoja-cab h2{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:20px; line-height:1.2; color:var(--dorado);}
-  .hoja-cerrar{width:34px; height:34px; border-radius:50%; border:1.5px solid rgba(255,255,255,.22); background:rgba(255,255,255,.08); color:var(--crema); font-size:22px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;}
-  .hoja-sub{font-size:13px; opacity:.85; margin:6px 0 14px; line-height:1.4;}
-  .hoja-btn-principal{
-    width:100%; display:flex; align-items:center; justify-content:center; gap:9px; cursor:pointer; font:inherit;
-    font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px; color:#fff; border:none; border-radius:16px; padding:13px 16px;
-    background:linear-gradient(135deg,#FF9843 0%,var(--naranja) 60%,#D96812 100%); box-shadow:0 10px 24px rgba(240,124,29,.35), inset 0 1px 0 rgba(255,255,255,.35);
-  }
-  .hoja-btn-principal:disabled{opacity:.65; cursor:wait;}
-  .hoja-btn-principal svg{width:20px; height:20px; flex-shrink:0;}
+  .hoja-asa{width:42px; height:4px; border-radius:4px; background:rgba(255,255,255,.28); margin:0 auto 14px;}
+  .hoja-cab{display:flex; align-items:center; gap:12px; margin-bottom:14px;}
+  .hoja-ico{width:42px; height:42px; border-radius:13px; background:rgba(227,177,85,.18); color:var(--dorado); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .hoja-ico svg{width:22px; height:22px;}
+  .hoja-tit{flex:1; min-width:0;}
+  .hoja-tit h2{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:16.5px; line-height:1.2; color:var(--crema);}
+  .hoja-tit p{font-size:11px; opacity:.85; margin-top:2px; line-height:1.3;}
+  .hoja-cerrar{width:36px; height:36px; border-radius:50%; flex-shrink:0; background:rgba(0,0,0,.35); border:1.5px solid rgba(255,255,255,.18); color:var(--crema); font-size:22px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;}
+  .btn-hoja{border:none; font:inherit; cursor:pointer;}
+  .btn-hoja:disabled{opacity:.65; cursor:wait;}
   .hoja-o{display:flex; align-items:center; gap:10px; margin:14px 0 12px; font-size:11.5px; opacity:.7;}
   .hoja-o::before,.hoja-o::after{content:''; flex:1; height:1px; background:rgba(255,255,255,.2);}
   .hoja-form{display:flex; gap:8px;}
   .hoja-form input{
-    flex:1; min-width:0; font:inherit; font-size:16px; color:var(--crema); background:rgba(255,255,255,.08);
-    border:1.5px solid rgba(255,255,255,.22); border-radius:14px; padding:11px 13px; outline:none;
+    flex:1; min-width:0; font:inherit; font-size:16px; color:var(--crema);
+    background:linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+    border:1.5px solid rgba(255,255,255,.26); border-radius:14px; padding:11px 13px; outline:none;
   }
   .hoja-form input::placeholder{color:rgba(251,246,236,.5);}
   .hoja-form input:focus{border-color:var(--dorado);}
   .hoja-form button{
     cursor:pointer; font:inherit; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14px; color:var(--crema);
-    background:rgba(227,177,85,.2); border:1.5px solid rgba(227,177,85,.5); border-radius:14px; padding:0 16px;
+    background:rgba(227,177,85,.18); border:1.5px solid rgba(227,177,85,.5); border-radius:14px; padding:0 16px;
   }
   .hoja-form button:disabled{opacity:.6; cursor:wait;}
-  .hoja-res{margin-top:14px; min-height:0;}
-  .res-ok{background:linear-gradient(160deg,rgba(255,255,255,.12),rgba(255,255,255,.05)); border:1.5px solid rgba(227,177,85,.45); border-radius:18px; padding:14px 16px; text-align:center;}
+  .hoja-res{margin-top:14px;}
+  .res-ok{background:linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,.05)); border:1.5px solid rgba(227,177,85,.4); border-radius:18px; padding:14px 16px; text-align:center;}
   .res-precio{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:44px; line-height:1; color:var(--dorado);}
   .res-km{font-size:13.5px; margin-top:6px;}
   .res-nota{font-size:11px; opacity:.7; margin-top:8px; line-height:1.4;}
   .res-aviso{font-size:12px; margin-top:8px; color:#FFD9A8; line-height:1.4;}
-  .res-pedir{display:inline-flex; align-items:center; justify-content:center; gap:6px; margin-top:12px; width:100%; text-decoration:none; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14.5px; color:#fff; border-radius:14px; padding:11px 14px; background:linear-gradient(135deg,#FF9843 0%,var(--naranja) 60%,#D96812 100%);}
+  .res-pedir{display:flex; align-items:center; justify-content:center; gap:6px; margin-top:12px; width:100%; text-decoration:none; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14.5px; color:#fff; border-radius:14px; padding:11px 14px; background:linear-gradient(135deg, #FF9843 0%, var(--naranja) 60%, #D96812 100%); box-shadow:0 10px 22px rgba(240,124,29,.35), inset 0 1px 0 rgba(255,255,255,.35);}
   .res-error{background:rgba(255,120,90,.12); border:1.5px solid rgba(255,140,110,.45); border-radius:14px; padding:11px 13px; font-size:13px; line-height:1.4;}
   .hoja-tarifas{margin-top:14px; font-size:11px; opacity:.6; text-align:center; line-height:1.5;}
 
@@ -267,6 +268,8 @@
 
 <div class="contenido">
   <img class="logo" src="logo_trans.png" alt="El Camaroncín ¡Uh Ah Ah! Marisquería" />
+
+  <div id="promosBanner"></div>
 
   <div class="botones">
     <a href="/" class="btn btn-principal">
@@ -348,13 +351,14 @@
 <div class="hoja" id="hojaEnvio" role="dialog" aria-modal="true" aria-labelledby="hojaEnvioTitulo" aria-hidden="true">
   <div class="hoja-asa"></div>
   <div class="hoja-cab">
-    <h2 id="hojaEnvioTitulo">Costo de envío</h2>
+    <span class="hoja-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg></span>
+    <div class="hoja-tit"><h2 id="hojaEnvioTitulo">Costo de envío</h2><p>Calcula cuánto cuesta a tu domicilio</p></div>
     <button type="button" class="hoja-cerrar" onclick="cerrarHojaEnvio()" aria-label="Cerrar">&times;</button>
   </div>
-  <p class="hoja-sub">Calcula cuánto cuesta el envío a tu domicilio.</p>
-  <button type="button" class="hoja-btn-principal" id="btnUsarUbicacion" onclick="calcularConGps()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7.5"/></svg>
-    Usar mi ubicación
+  <button type="button" class="btn btn-principal btn-hoja" id="btnUsarUbicacion" onclick="calcularConGps()">
+    <span class="btn-icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7.5"/></svg></span>
+    <span class="btn-texto"><span class="btn-titulo">Usar mi ubicación</span><span class="btn-sub">Es lo más rápido</span></span>
+    <span class="btn-flecha">›</span>
   </button>
   <div class="hoja-o"><span>o escribe tu dirección</span></div>
   <form class="hoja-form" onsubmit="calcularConTexto(event)">
@@ -463,8 +467,9 @@ async function calcularDesde(lat, lng) {
 function calcularConGps() {
   const btn = document.getElementById('btnUsarUbicacion');
   if (!navigator.geolocation) { mostrarErrorEnvio('Tu navegador no permite usar la ubicación. Escribe tu dirección abajo.'); return; }
-  btn.disabled = true; const txt = btn.lastChild.textContent; btn.lastChild.textContent = ' Buscando tu ubicación...';
-  const listo = () => { btn.disabled = false; btn.lastChild.textContent = txt; };
+  const tit = btn.querySelector('.btn-titulo');
+  btn.disabled = true; const txt = tit.textContent; tit.textContent = 'Buscando tu ubicación...';
+  const listo = () => { btn.disabled = false; tit.textContent = txt; };
   navigator.geolocation.getCurrentPosition(
     async (pos) => { try { await calcularDesde(pos.coords.latitude, pos.coords.longitude); } finally { listo(); } },
     (err) => {
@@ -491,6 +496,7 @@ async function calcularConTexto(e) {
   } finally { btn.disabled = false; btn.textContent = 'Calcular'; }
 }
 </script>
+<script src="/promos-banner.js" defer></script>
 
 </body>
 </html>
