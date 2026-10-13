@@ -2075,7 +2075,9 @@ function abrirProducto(id, editItem = null) {
                 ? ' <span class="text-accent text-[12px] font-medium">· elige uno</span>'
                 : paso.grupo.requerido
                   ? ` <span class="text-accent text-[12px] font-medium">· obligatorio${paso.grupo.limite ? ' · máx. ' + paso.grupo.limite : ''}</span>`
-                  : ` <span class="text-muted text-[12px] font-medium">· opcional${paso.grupo.limite ? ' · máx. ' + paso.grupo.limite : ''}</span>`
+                  : paso.grupo.conTodo
+                    ? ' <span class="text-muted text-[12px] font-medium">· toca para quitar lo que no quieras</span>'
+                    : ` <span class="text-muted text-[12px] font-medium">· opcional${paso.grupo.limite ? ' · máx. ' + paso.grupo.limite : ''}</span>`
             }
           </legend>
           ${paso.grupo.conTodo ? `
