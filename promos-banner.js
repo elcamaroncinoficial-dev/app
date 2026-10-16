@@ -8,6 +8,19 @@
 
   var host = document.getElementById('promosBanner');
   if (!host) return;
+  var CLAVE_HAY = 'camaroncin_hay_promos';
+
+  // ---- Espacio reservado: la página aparta el lugar (renglón "fantasma") antes de que lleguen los datos.
+  //      Si hay datos, se reemplaza en el mismo espacio; si no hay, el espacio se cierra suave. ----
+  function marcar(v) { try { localStorage.setItem(CLAVE_HAY, v ? '1' : '0'); } catch (e) {} }
+  function cerrarEspacio() {
+    if (!host.querySelector('.esq')) return;
+    host.style.height = host.offsetHeight + 'px'; host.style.overflow = 'hidden';
+    void host.offsetHeight;
+    host.style.transition = 'height .3s ease, opacity .25s ease';
+    host.style.height = '0px'; host.style.opacity = '0';
+    setTimeout(function () { host.innerHTML = ''; host.removeAttribute('style'); }, 330);
+  }
 
   function api(ruta) {
     return fetch(SUPABASE_URL + '/rest/v1/' + ruta, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY } })
@@ -26,10 +39,11 @@
     .then(function (r) {
       var cfg = r[0] && r[0][0];
       var promos = (r[1] || []).filter(function (p) { return p.imagen_url; });
-      if (!cfg || !cfg.promo_activa || !promos.length) return;
+      if (!cfg || !cfg.promo_activa || !promos.length) { marcar(false); cerrarEspacio(); return; }
+      marcar(true);
       iniciar(promos);
     })
-    .catch(function () { /* sin internet o error: no se muestra nada */ });
+    .catch(function () { cerrarEspacio(); /* sin internet o error: no se muestra nada */ });
 
   function iniciar(promos) {
     // ---------- estilos ----------
@@ -84,8 +98,8 @@
       // Renglón dentro del panel de la bienvenida (usa los estilos .fila de la página)
       var ICO = '<svg viewBox="0 0 24 24" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d="M3.5 8.5V6a1.5 1.5 0 0 1 1.5-1.5h14A1.5 1.5 0 0 1 20.5 6v2.5a3.5 3.5 0 0 0 0 7V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18v-2.5a3.5 3.5 0 0 0 0-7z"/><path d="M9.5 14.5l5-5"/><circle cx="9.7" cy="9.7" r=".9"/><circle cx="14.3" cy="14.3" r=".9"/></svg>';
       host.classList.add('pb-fila');
-      if (formato === 'chip') host.innerHTML = '<button type="button" class="atajo" aria-haspopup="dialog"><span class="atajo-ico">' + ICO + '<i class="fila-num">' + n + '</i></span><span class="atajo-txt">Promociones</span><span class="atajo-fl" aria-hidden="true">›</span></button>';
-      else host.innerHTML = '<button type="button" class="fila fila-dest" aria-haspopup="dialog"><span class="fila-ico">' + ICO + '<i class="fila-num">' + n + '</i></span><span class="fila-txt"><span class="fila-tit">Promociones</span><span class="fila-sub">' + (n === 1 ? '1 activa hoy' : n + ' activas hoy') + '</span></span><span class="fila-fl" aria-hidden="true">›</span></button>';
+      if (formato === 'chip') host.innerHTML = '<button type="button" class="atajo aparece" aria-haspopup="dialog"><span class="atajo-ico">' + ICO + '<i class="fila-num">' + n + '</i></span><span class="atajo-txt">Promociones</span><span class="atajo-fl" aria-hidden="true">›</span></button>';
+      else host.innerHTML = '<button type="button" class="fila fila-dest aparece" aria-haspopup="dialog"><span class="fila-ico">' + ICO + '<i class="fila-num">' + n + '</i></span><span class="fila-txt"><span class="fila-tit">Promociones</span><span class="fila-sub">' + (n === 1 ? '1 activa hoy' : n + ' activas hoy') + '</span></span><span class="fila-fl" aria-hidden="true">›</span></button>';
     } else {
     host.classList.add(document.querySelector('.barra-flotante') ? 'pb-en-menu' : 'pb-en-bienvenida');
     host.innerHTML = '<button type="button" class="pb-banner" aria-haspopup="dialog"><span class="pb-tile">' + TAG + '<i class="pb-num">' + n + '</i></span><span class="pb-texto"><span class="pb-titulo">Promociones</span><span class="pb-sub">' + sub + '</span></span><span class="pb-flecha" aria-hidden="true">›</span></button>';

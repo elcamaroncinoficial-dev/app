@@ -330,6 +330,18 @@
   .social-label{margin-top:16px;}
   .redes{margin-top:8px;}
   @media (min-width:700px){ body{justify-content:center;} .contenido{flex:0;} }
+
+  /* Renglón "fantasma" mientras llegan Promociones y Combos (evita el salto al cargar) */
+  .esq{pointer-events:none;}
+  .esq .esq-l1,.esq .esq-l2,.esq .esq-c{display:block;border-radius:8px;background:rgba(255,255,255,.13);animation:esqLate 1.2s ease-in-out infinite;}
+  .esq .esq-l1{width:44%;height:15px;}
+  .esq .esq-l2{width:64%;height:10px;margin-top:8px;background:rgba(255,255,255,.08);}
+  .esq .esq-c{width:60%;height:14px;}
+  .esq .fila-ico,.esq .atajo-ico{border-color:rgba(227,177,85,.25);background:rgba(227,177,85,.06);animation:esqLate 1.2s ease-in-out infinite;}
+  @keyframes esqLate{0%,100%{opacity:.55}50%{opacity:1}}
+  .aparece{animation:aparece .35s ease both;}
+  @keyframes aparece{from{opacity:0}to{opacity:1}}
+  @media (prefers-reduced-motion:reduce){.esq *,.aparece{animation:none!important;}}
 </style>
 </head>
 <body>
@@ -360,6 +372,23 @@
       <span class="fila-fl" aria-hidden="true">›</span>
     </button>
   </div>
+<script>
+/* Aparta el lugar de Promociones y Combos antes de que lleguen los datos.
+   Recuerda la visita anterior: si la última vez no había, no aparta espacio. */
+(function(){
+  function hay(k){ try{ return localStorage.getItem(k)!=='0'; }catch(e){ return true; } }
+  function esq(host){
+    var chip=host.getAttribute('data-formato')==='chip';
+    host.innerHTML = chip
+      ? '<div class="atajo esq" aria-hidden="true"><span class="atajo-ico"></span><span class="atajo-txt"><span class="esq-c"></span></span></div>'
+      : '<div class="fila esq" aria-hidden="true"><span class="fila-ico"></span><span class="fila-txt"><span class="esq-l1"></span><span class="esq-l2"></span></span></div>';
+  }
+  var p=document.getElementById('promosBanner'), c=document.getElementById('combosBoton');
+  if(p && hay('camaroncin_hay_promos')) esq(p);
+  if(c && hay('camaroncin_hay_combos')) esq(c);
+})();
+</script>
+
 
   <!-- Contacto -->
   <div class="pildoras">

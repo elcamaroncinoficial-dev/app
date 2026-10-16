@@ -13,6 +13,19 @@
 
   var host = document.getElementById('combosBoton');
   if (!host) return;
+  var CLAVE_HAY = 'camaroncin_hay_combos';
+
+  // ---- Espacio reservado: la página aparta el lugar (renglón "fantasma") antes de que lleguen los datos.
+  //      Si hay datos, se reemplaza en el mismo espacio; si no hay, el espacio se cierra suave. ----
+  function marcar(v) { try { localStorage.setItem(CLAVE_HAY, v ? '1' : '0'); } catch (e) {} }
+  function cerrarEspacio() {
+    if (!host.querySelector('.esq')) return;
+    host.style.height = host.offsetHeight + 'px'; host.style.overflow = 'hidden';
+    void host.offsetHeight;
+    host.style.transition = 'height .3s ease, opacity .25s ease';
+    host.style.height = '0px'; host.style.opacity = '0';
+    setTimeout(function () { host.innerHTML = ''; host.removeAttribute('style'); }, 330);
+  }
 
   function api(ruta) {
     return fetch(SUPABASE_URL + '/rest/v1/' + ruta, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY } })
@@ -27,8 +40,11 @@
       var ids = cats.map(function (c) { return '"' + c.id + '"'; }).join(',');
       return api('productos?select=id,nombre,descripcion,precio_base,imagen_url,disponible,orden&descontinuado=eq.false&categoria_id=in.(' + ids + ')&order=orden.asc,id.asc');
     })
-    .then(function (combos) { if (combos && combos.length) iniciar(combos); })
-    .catch(function () { /* sin internet o error: no se muestra nada */ });
+    .then(function (combos) {
+      if (combos && combos.length) { marcar(true); iniciar(combos); }
+      else { marcar(false); cerrarEspacio(); }
+    })
+    .catch(function () { cerrarEspacio(); /* sin internet o error: no se muestra nada */ });
 
   function iniciar(combos) {
     var css = '' +
@@ -53,10 +69,13 @@
       '.cb-lista{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:2px 16px 8px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;}' +
       '.cb-combo{flex-shrink:0;border-radius:20px;overflow:hidden;background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.04));border:1.5px solid rgba(255,255,255,.16);}' +
       '.cb-combo.cb-agotado{opacity:.55;}' +
-      '.cb-foto{position:relative;aspect-ratio:16/10;background:rgba(255,255,255,.06) center/cover no-repeat;}' +
-      '.cb-foto::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.85) 100%);}' +
-      '.cb-precio{position:absolute;right:12px;bottom:10px;z-index:1;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:28px;line-height:1;color:#E3B155;text-shadow:0 2px 10px rgba(0,0,0,.5);}' +
-      '.cb-nombre{position:absolute;left:14px;bottom:12px;right:110px;z-index:1;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:19px;line-height:1.1;text-shadow:0 2px 10px rgba(0,0,0,.6);}' +
+      '.cb-foto{position:relative;background:rgba(255,255,255,.06);line-height:0;}' +
+      '.cb-foto img{display:block;width:100%;height:auto;}' +
+      '.cb-foto.sin-img{aspect-ratio:16/9;}' +
+
+      '.cb-titulo{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px;}' +
+      '.cb-precio{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:26px;line-height:1;color:#E3B155;flex-shrink:0;}' +
+      '.cb-nombre{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:19px;line-height:1.1;}' +
       '.cb-marca{position:absolute;top:10px;left:10px;z-index:1;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:99px;}' +
       '.cb-marca.hoy{background:#FBF6EC;color:#0E1D46;}' +
       '.cb-marca.ago{background:#5A6178;color:#fff;}' +
@@ -71,10 +90,10 @@
     // ---------- botón ----------
     var ICO = '<svg viewBox="0 0 24 24" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d="M3 17.5h18"/><path d="M4.5 17.5a7.5 7.5 0 0 1 15 0"/><path d="M12 10V8.6"/><circle cx="12" cy="7.6" r="1"/><path d="M8 14.2a4.6 4.6 0 0 1 2.4-2.1"/><path d="M5 20h14"/></svg>';
     if (host.getAttribute('data-formato') === 'chip') {
-      host.innerHTML = '<button type="button" class="atajo" aria-haspopup="dialog"><span class="atajo-ico">' + ICO + '<i class="fila-num">' + combos.length + '</i></span><span class="atajo-txt">Combos</span><span class="atajo-fl" aria-hidden="true">›</span></button>';
+      host.innerHTML = '<button type="button" class="atajo aparece" aria-haspopup="dialog"><span class="atajo-ico">' + ICO + '<i class="fila-num">' + combos.length + '</i></span><span class="atajo-txt">Combos</span><span class="atajo-fl" aria-hidden="true">›</span></button>';
     } else if (host.getAttribute('data-formato') === 'fila') {
       // Renglón dentro del panel de la bienvenida (usa los estilos .fila de la página)
-      host.innerHTML = '<button type="button" class="fila fila-dest" aria-haspopup="dialog"><span class="fila-ico">' + ICO + '<i class="fila-num">' + combos.length + '</i></span><span class="fila-txt"><span class="fila-tit">Combos</span><span class="fila-sub">Qué incluye cada uno</span></span><span class="fila-fl" aria-hidden="true">›</span></button>';
+      host.innerHTML = '<button type="button" class="fila fila-dest aparece" aria-haspopup="dialog"><span class="fila-ico">' + ICO + '<i class="fila-num">' + combos.length + '</i></span><span class="fila-txt"><span class="fila-tit">Combos</span><span class="fila-sub">Qué incluye cada uno</span></span><span class="fila-fl" aria-hidden="true">›</span></button>';
     } else {
       host.innerHTML = '<button type="button" class="cb-respaldo" aria-haspopup="dialog"><span class="mosaico-titulo">Combos</span><span class="mosaico-sub">Qué incluye cada uno</span></button>';
     }
@@ -92,12 +111,12 @@
       '<div class="cb-lista">' + combos.map(function (c) {
         var ago = c.disponible === false;
         return '<article class="cb-combo' + (ago ? ' cb-agotado' : '') + '">' +
-          '<div class="cb-foto"' + (c.imagen_url ? ' style="background-image:url(\'' + esc(c.imagen_url) + '\')"' : '') + '>' +
+          '<div class="cb-foto' + (c.imagen_url ? '' : ' sin-img') + '">' +
+            (c.imagen_url ? '<img src="' + esc(c.imagen_url) + '" alt="' + esc(c.nombre) + '" loading="lazy">' : '') +
             (ago ? '<span class="cb-marca ago">Agotado hoy</span>' : '') +
-            '<span class="cb-nombre">' + esc(c.nombre) + '</span>' +
-            '<span class="cb-precio">' + dinero(c.precio_base) + '</span>' +
           '</div>' +
           '<div class="cb-cuerpo">' +
+            '<div class="cb-titulo"><span class="cb-nombre">' + esc(c.nombre) + '</span><span class="cb-precio">' + dinero(c.precio_base) + '</span></div>' +
             (c.descripcion ? '<p class="cb-desc">' + esc(c.descripcion) + '</p>' : '') +
             (ago ? '' : '<a class="cb-pedir" href="' + APP_URL + '">Pedir este combo ›</a>') +
           '</div>' +
