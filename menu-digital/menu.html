@@ -7,10 +7,10 @@
 <meta name="description" content="Menú digital de El Camaroncín — mariscos frescos, ceviches, aguachiles, cócteles y más. Amado Nervo #58, Los Reyes, Tultitlán." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:#0E1D46;}
+  body{background:#183084;}
   img{display:block;width:100%;height:auto;}
   .barra-flotante{
     position:sticky;top:0;z-index:40;
@@ -114,6 +114,10 @@
     transform:scale(1.04);
   }
   .galeria-item img.cargada{opacity:1;transform:scale(1);}
+  .galeria-item.cargando{opacity:1;transform:none;cursor:default;}
+  .galeria-item.cargando figcaption{height:13px;width:60%;margin:12px auto 0;border-radius:6px;background:rgba(255,255,255,.08);}
+  .galeria-aviso{text-align:center;padding:8px 20px 56px;color:rgba(251,246,236,.7);font-size:13px;}
+  .galeria-aviso button{margin-top:12px;padding:10px 20px;border-radius:999px;border:1px solid rgba(227,177,85,.55);background:transparent;color:#fbf6ec;font:inherit;font-size:13px;cursor:pointer;}
   .galeria-item figcaption{
     margin-top:10px;
     text-align:center;
@@ -202,22 +206,144 @@
       box-shadow:0 24px 70px rgba(0,0,0,.55);
     }
   }
+
+  /* ===== Encabezado nuevo (oct-2026) ===== */
+  /* Azul medido de las páginas de la carta: #3054A8 (claro) → #24489C → #183084 (oscuro) */
+  :root{ --hoja-fondo:linear-gradient(180deg, rgba(48,84,168,.97) 0%, rgba(24,48,132,.985) 100%); }
+  .cab{
+    position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:10px;
+    padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;
+    background:rgba(24,48,132,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(255,255,255,.08);
+    font-family:'Baloo 2',-apple-system,sans-serif;color:#FBF6EC;
+    transition:transform .28s ease;
+  }
+  .cab.oculta{transform:translateY(-100%);}
+  .cab-volver{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#FBF6EC;border:1.2px solid rgba(255,255,255,.22);flex-shrink:0;}
+  .cab-volver svg{width:20px;height:20px;}
+  .cab-logo{width:36px!important;height:auto;flex-shrink:0;}
+  .cab-tit{flex:1;font-weight:700;font-size:19px;line-height:1;}
+  .cab-pdf{display:flex;align-items:center;gap:6px;padding:8px 13px;border-radius:99px;text-decoration:none;color:#FBF6EC;font-weight:700;font-size:13.5px;border:1.2px solid rgba(227,177,85,.55);}
+  .cab-pdf svg{width:17px;height:17px;color:#E3B155;}
+
+  .atajos{display:flex;gap:8px;padding:10px 12px;background:#183084;}
+  .atajos > div{flex:1 1 0;min-width:0;}
+  .atajos > div:empty{display:none;}
+  .atajos:not(:has(> div:not(:empty))){display:none;}
+  .atajo{
+    display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px 8px 8px;border-radius:16px;cursor:pointer;
+    font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15px;color:#FBF6EC;text-align:left;
+    background:rgba(48,84,168,.55);border:1.2px solid rgba(227,177,85,.5);-webkit-tap-highlight-color:transparent;
+  }
+  .atajo:active{transform:scale(.98);}
+  .atajo-ico{position:relative;width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#E3B155;border:1.2px solid rgba(227,177,85,.55);background:rgba(227,177,85,.12);}
+  .atajo-ico svg{width:22px;height:22px;}
+  .atajo-txt{flex:1;min-width:0;line-height:1.1;}
+  .atajo-fl{color:#E3B155;font-size:20px;}
+  .fila-num{position:absolute;top:-5px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:#F07C1D;color:#fff;font:700 11px/18px 'Baloo 2',sans-serif;text-align:center;font-style:normal;}
+
+  .dock{
+    position:fixed;left:0;right:0;bottom:0;z-index:45;
+    padding:26px 14px calc(14px + env(safe-area-inset-bottom,0px));
+    background:linear-gradient(180deg, rgba(10,20,60,0) 0%, rgba(10,20,60,.82) 45%, rgba(10,20,60,.95) 100%);
+    transition:transform .3s ease, opacity .3s ease; pointer-events:none;
+  }
+  .dock.oculto{transform:translateY(110%);opacity:0;}
+  .pedir{
+    pointer-events:auto;display:flex;align-items:center;gap:12px;max-width:440px;margin:0 auto;
+    padding:9px 18px 9px 9px;border-radius:20px;text-decoration:none;color:#fff;
+    font-family:'Baloo 2',sans-serif;font-weight:800;font-size:18px;line-height:1.05;
+    background:linear-gradient(135deg,#FF9843 0%,#F07C1D 58%,#D96812 100%);
+    border:2px solid #FBF6EC;
+    box-shadow:0 14px 30px rgba(0,0,0,.5),0 0 0 4px rgba(240,124,29,.25),inset 0 1px 0 rgba(255,255,255,.4);
+  }
+  .pedir:active{transform:scale(.98);}
+  .pedir small{display:block;font-family:Inter,sans-serif;font-weight:500;font-size:11.5px;opacity:.92;margin-top:2px;}
+  .pedir-txt{flex:1;min-width:0;}
+  .pedir-fl{font-size:24px;opacity:.9;}
+  .pedir-ico{width:42px;height:42px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;border:1.4px solid rgba(255,255,255,.6);background:rgba(255,255,255,.16);}
+  .pedir-ico svg{width:22px;height:22px;}
+  .dock.llamar .pedir{animation:llamar 1.4s ease-out 2;}
+  @keyframes llamar{0%{box-shadow:0 14px 30px rgba(0,0,0,.5),0 0 0 0 rgba(240,124,29,.7)}100%{box-shadow:0 14px 30px rgba(0,0,0,.5),0 0 0 16px rgba(240,124,29,0)}}
+  @media (prefers-reduced-motion:reduce){.dock.llamar .pedir{animation:none}}
+  .galeria{padding-bottom:110px;}
+
+
+  /* ===== Aviso de alergias al abrir el menú ===== */
+  .alerg-fondo{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:22px;
+    background:rgba(8,16,48,.55);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+    opacity:0;transition:opacity .3s ease;}
+  .alerg-fondo[hidden]{display:none;}
+  .alerg-fondo.ver{opacity:1;}
+  .alerg{position:relative;width:100%;max-width:360px;border-radius:26px;padding:30px 22px 20px;text-align:center;color:#FBF6EC;
+    background:linear-gradient(180deg,#3054A8 0%,#24489C 45%,#183084 100%);
+    border:1.5px solid rgba(227,177,85,.7);
+    box-shadow:0 30px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.18);
+    transform:translateY(16px) scale(.97);transition:transform .35s cubic-bezier(.2,.8,.2,1);
+    font-family:Inter,-apple-system,sans-serif;}
+  .alerg-fondo.ver .alerg{transform:none;}
+  .alerg-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;padding:0;cursor:pointer;
+    background:rgba(0,0,0,.25);border:1.2px solid rgba(255,255,255,.25);color:#FBF6EC;font-size:21px;line-height:1;display:flex;align-items:center;justify-content:center;}
+  .alerg-ico{width:66px;height:66px;margin:0 auto 12px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:#E3B155;border:1.4px solid rgba(227,177,85,.7);background:rgba(227,177,85,.12);box-shadow:0 0 0 6px rgba(227,177,85,.07);}
+  .alerg-ico svg{width:34px;height:34px;}
+  .alerg h2{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:22px;line-height:1.1;}
+  .alerg .linea{width:46px;height:2px;border-radius:2px;background:#E3B155;margin:10px auto 12px;opacity:.8;}
+  .alerg p{font-size:14.5px;line-height:1.55;opacity:.95;}
+  .alerg p b{color:#FFD58A;font-weight:700;}
+  .alerg-ok{display:block;width:100%;margin-top:18px;padding:13px 16px;border-radius:16px;border:0;cursor:pointer;color:#fff;
+    font-family:'Baloo 2',sans-serif;font-weight:800;font-size:16px;
+    background:linear-gradient(135deg,#FF9843 0%,#F07C1D 58%,#D96812 100%);
+    box-shadow:0 10px 22px rgba(240,124,29,.4),inset 0 1px 0 rgba(255,255,255,.35);}
+  .alerg-nota{font-size:11px;opacity:.65;margin-top:10px;}
+  .alerg-ok:focus{outline:none;}
+  .alerg-ok:focus-visible,.alerg-x:focus-visible{outline:2px solid #E3B155;outline-offset:3px;}
+  @media (prefers-reduced-motion:reduce){.alerg-fondo,.alerg{transition:none;}}
+
+  /* ===== Fondo con siluetas marinas (las mismas de la lona) y letras "camaroncinescas" ===== */
+  body{background:#24489C url(patron.svg) center top/320px 320px repeat;}
+  .atajos{background:transparent;}
+  .galeria-header{padding-top:40px;position:relative;}
+  .ola-sep{display:block;width:100%;height:28px;margin-top:-1px;color:#183084;}
+  .letra-cam{
+    font-family:'Baloo 2',sans-serif;font-weight:800;letter-spacing:.01em;color:#FF7A1A;
+    text-shadow:2px 2px 0 #0E1D46,-1px -1px 0 #0E1D46,1px -1px 0 #0E1D46,-1px 1px 0 #0E1D46,0 4px 0 #0E1D46,0 7px 14px rgba(0,0,0,.35);
+    transform:rotate(-2deg);display:inline-block;
+  }
+  .galeria-header h2.letra-cam{font-size:34px;color:#FF7A1A;}
+  .galeria-header .sub-cam{display:block;margin-top:6px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:14px;color:#FBF6EC;opacity:.85;letter-spacing:.02em;}
+  .alerg{background:#24489C url(patron.svg) center/260px 260px;}
+  .alerg::before{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,rgba(48,84,168,.55) 0%,rgba(24,48,132,.85) 100%);pointer-events:none;}
+  .alerg > *{position:relative;}
+  .alerg-x{position:absolute;}
+  .alerg h2.letra-cam{font-size:30px;line-height:1.05;}
+  .alerg .linea{background:#FF7A1A;height:3px;width:56px;}
+  .alerg p b{color:#FFC566;}
+
+  /* Nombres de platillos y visor con la tipografía de la marca */
+  .galeria-item figcaption{font-family:'Baloo 2',sans-serif;font-style:normal;font-weight:700;font-size:14.5px;color:#FBF6EC;letter-spacing:.01em;text-shadow:0 2px 6px rgba(0,0,0,.35);}
+  #lightbox figcaption{font-family:'Baloo 2',sans-serif;font-style:normal;font-weight:800;font-size:21px;color:#FF7A1A;
+    text-shadow:2px 2px 0 #0E1D46,-1px -1px 0 #0E1D46,1px -1px 0 #0E1D46,-1px 1px 0 #0E1D46,0 4px 0 #0E1D46;}
+  .galeria-item figure{background:linear-gradient(100deg,#1E3C8E 8%,#2F55AE 18%,#1E3C8E 33%);background-size:300% 100%;
+    border:2px solid rgba(251,246,236,.85);box-shadow:0 12px 26px rgba(8,16,48,.45);}
+  .galeria-item figure.lista{border-color:rgba(251,246,236,.85);}
+  .galeria-item.cargando figcaption{background:rgba(255,255,255,.18);}
 </style>
 </head>
 <body>
 
-<div class="barra-flotante">
-  <a href="menu-el-camaroncin.pdf" download class="secundario">
-    <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg></span>
-    Descargar PDF
-  </a>
-  <a href="/" class="principal">
-    <span class="ico"><svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l.35 2M6.35 6h13.4l-1.8 7.2a1.5 1.5 0 0 1-1.46 1.13H8.2a1.5 1.5 0 0 1-1.46-1.14L4.9 4.45"/><circle cx="9.5" cy="19.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="16.5" cy="19.5" r="1.3" fill="currentColor" stroke="none"/></svg></span>
-    App de pedidos
-  </a>
-</div>
+<header class="cab" id="cab">
+  <a href="/bienvenida/" class="cab-volver" aria-label="Volver al inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg></a>
+  <img src="/bienvenida/logo_trans.png" alt="" class="cab-logo">
+  <span class="cab-tit">Menú</span>
+  <a href="menu-el-camaroncin.pdf" download class="cab-pdf" aria-label="Descargar el menú en PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14"/></svg>PDF</a>
+</header>
 
-<div id="promosBanner"></div>
+<!-- Accesos rápidos: se llenan solos (promos-banner.js y combos.js); si no hay, no aparecen -->
+<div class="atajos" id="atajos">
+  <div id="promosBanner" data-formato="chip"></div>
+  <div id="combosBoton" data-formato="chip"></div>
+</div>
 
 <div class="paginas">
 <img src="menu-img/pagina-1.jpg" alt="El Camaroncín — portada" />
@@ -231,57 +357,16 @@
 </div>
 
 <div class="galeria-header">
-  <h2>Galería</h2>
+  <h2 class="letra-cam">Galería</h2>
+  <span class="sub-cam">Así se ven nuestros platillos</span>
 </div>
-<div class="galeria">
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/combo_taco_gobernador_empanada_refresco.jpg" alt="Combo Taco Gobernador" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Combo Taco Gobernador</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/pescadillas.jpg" alt="Pescadillas" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Pescadillas</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/platillo-6c114e5b-5d12-4537-bb9e-e7143674309d-1789097425031.jpg" alt="Camaroncillas" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Camaroncillas</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/filetito-capeado-sencillo.jpg" alt="Filetito capeado sencillo" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Filetito capeado sencillo</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/filetito-capeado-preparado.jpg" alt="Filetito capeado preparado" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Filetito capeado preparado</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/chicharron-de-pescado.jpg" alt="Chicharrón de pescado" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Chicharrón de pescado</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tacos-gobernador.jpg" alt="Tacos gobernador" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Tacos gobernador</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/taco-capeado.jpg" alt="Taco capeado" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Taco capeado</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/empanada_de_queso.jpg" alt="Empanada de queso" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Empanada de queso</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/empanada-de-pulpo-o-camaron.jpg" alt="Empanada de pulpo o camarón" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Empanada de pulpo/camarón</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/platillo-0438b2c7-cadc-455f-a278-8b8d16818037-1789097363329.jpg" alt="Empanada de camarón" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Empanada de camarón</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/empanada-mixta.jpg" alt="Empanada mixta" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Empanada mixta</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/caldo-de-camaron-pelado.jpg" alt="Caldo de camarón pelado" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Caldo de camarón pelado</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/caldo-de-camaron-para-pelar-v2.jpg" alt="Caldo de camarón para pelar" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Caldo de camarón p/pelar</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/caldo-de-camaron-para-pelar.jpg" alt="Consomé de camarón" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Consomé de camarón</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/caldo-de-pescado.jpg" alt="Caldo de pescado" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Caldo de pescado</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/sopa-de-mariscos.jpg" alt="Sopa de mariscos" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Sopa de mariscos</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/platillo-49849001-509d-4310-8356-ed2e337d8a76-1789100307610.jpg" alt="Cazuela de mariscos" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Cazuela de mariscos</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/almeja-chocolata.jpg" alt="Almeja chocolata" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Almeja chocolata</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tostada-de-ceviche-de-camaron.jpg" alt="Tostada de ceviche de camarón" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Tostada de ceviche camarón</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tostada-de-ceviche-de-pescado.jpg" alt="Tostada de ceviche de pescado" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Tostada de ceviche pescado</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tostada-macha.jpg" alt="Tostada macha" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Tostada macha</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tostada-de-pulpo.jpg" alt="Tostada de pulpo" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Tostada de pulpo</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/coctel_chico.jpg" alt="Cóctel chico" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Cóctel chico</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/coctel_mediano.jpg" alt="Cóctel mediano" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Cóctel mediano</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/coctel-grande.jpg" alt="Cóctel grande" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Cóctel grande</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/platillo-c53a5894-dbd5-43fd-812e-6aaa03f17219-1789097190628.jpg" alt="Camarones Uh Ah Ah" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Camarones Uh, Ah, Ah</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/ceviche-mixto.jpg" alt="Ceviche mixto" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Ceviche mixto</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/platillo-1addf5b7-be55-4b09-988a-d49af5f9089d-1789097212817.jpg" alt="Aguachile mixto" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Aguachile mixto</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/aguachile-de-camaron.jpg" alt="Aguachile de camarón" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Aguachile de camarón</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/aguachile-de-callo-de-hacha.jpg" alt="Aguachile de callo de hacha" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Aguachile callo de hacha</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/mojarra-al-gusto.jpg" alt="Mojarra al gusto" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Mojarra al gusto</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/filete-de-pescado-al-gusto.jpg" alt="Filete de pescado al gusto" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Filete de pescado al gusto</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/salmon-al-gusto.jpg" alt="Salmón al gusto" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Salmón al gusto</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/filete-empapelado.jpg" alt="Filete empapelado" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Filete empapelado</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/camarones-al-gusto.jpg" alt="Camarones al gusto" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Camarones al gusto</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/alambre-de-camaron-pulpo-o-mixto-v2.jpg" alt="Alambre de camarón, pulpo o mixto" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Alambre de camarón/pulpo</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/camarones-momia.jpg" alt="Camarones momia" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Camarones momia</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/hamburguesa-de-camaron.jpg" alt="Hamburguesa de camarón" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Hamburguesa de camarón</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/spaguetti-con-camarones-a-los-3-quesos.jpg" alt="Spaguetti con camarones a los 3 quesos" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Spaguetti camarones 3 quesos</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/spaguetti-con-mariscos-a-los-3-quesos.jpg" alt="Spaguetti con mariscos a los 3 quesos" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Spaguetti mariscos 3 quesos</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/pulpo-a-la-talla.jpg" alt="Pulpo a la talla" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Pulpo a la talla</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/camarones-gratinados.jpg" alt="Camarones gratinados" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Camarones gratinados</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/arrachera-marinada.jpg" alt="Arrachera marinada" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Arrachera marinada</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/hamburguesa_de_res.jpg" alt="Hamburguesa de res" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Hamburguesa de res</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/mini-hamburguesa-de-res-con-papas.jpg" alt="Mini-hamburguesa de res" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Mini-hamburguesa de res</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/tenders-de-pescado-con-papas.jpg" alt="Tenders de pescado con papas" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Tenders de pescado</figcaption></div>
-<div class="galeria-item"><figure><img loading="lazy" src="https://rtfegumafcmgqmuxiwzh.supabase.co/storage/v1/object/public/platillos/postre-del-dia.jpg" alt="Postre del día" onload="this.classList.add(&#39;cargada&#39;);this.closest(&#39;figure&#39;).classList.add(&#39;lista&#39;)" onclick="abrirLightbox(this)"></figure><figcaption>Postre del día</figcaption></div></div>
+<div class="galeria" id="galeria" aria-live="polite"></div>
+<div class="galeria-aviso" id="galeria-aviso" hidden>
+  <p>No pudimos cargar las fotos. Revisa tu conexión.</p>
+  <button type="button" onclick="cargarGaleria()">Reintentar</button>
+</div>
+
+<div class="dock oculto" id="pedir"><a href="/" class="pedir"><span class="pedir-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6"/><path d="M10.5 5h3"/><path d="M12 9v6.2M9.4 12.8 12 15.4l2.6-2.6"/></svg></span><span class="pedir-txt">Hacer un pedido<small>Pide a domicilio desde la app</small></span><span class="pedir-fl" aria-hidden="true">›</span></a></div>
 
 <div id="lightbox" onclick="if(event.target===this)cerrarLightbox()">
   <button class="cerrar" onclick="cerrarLightbox()" aria-label="Cerrar">
@@ -300,7 +385,7 @@
 </div>
 
 <script>
-const galeriaImgs = Array.from(document.querySelectorAll('.galeria-item img'));
+let galeriaImgs = [];
 let indiceActual = 0;
 
 function abrirLightbox(imgEl){
@@ -349,9 +434,135 @@ const observador = new IntersectionObserver((entradas) => {
   });
 }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
 
-document.querySelectorAll('.galeria-item').forEach(el => observador.observe(el));
+// ============================================================
+// GALERÍA EN VIVO — se arma sola con los platillos del admin.
+// Muestra solo platillos NO descontinuados y CON foto, en el mismo
+// orden que la app (categoría.orden → platillo.orden → id).
+// Si cambias una foto, descontinúas o agregas un platillo en el
+// admin, aquí se refleja la próxima vez que alguien abra la página.
+// ============================================================
+const SUPA_URL = 'https://rtfegumafcmgqmuxiwzh.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0ZmVndW1hZmNtZ3FtdXhpd3poIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyOTUzMzQsImV4cCI6MjEwMTg3MTMzNH0.TCgd7FBIHIPcZ3m6pejAPHXhwZPzrd3sC3PQSQXtkjA';
+
+function supaGet(ruta){
+  return fetch(SUPA_URL + '/rest/v1/' + ruta, {
+    headers: { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY }
+  }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+}
+
+function crearTarjeta(nombre, url){
+  const item = document.createElement('div');
+  item.className = 'galeria-item';
+  const fig = document.createElement('figure');
+  const img = document.createElement('img');
+  img.loading = 'lazy';
+  img.alt = nombre;
+  img.onload = () => { img.classList.add('cargada'); fig.classList.add('lista'); };
+  img.onerror = () => { item.remove(); galeriaImgs = galeriaImgs.filter(x => x !== img); };
+  img.onclick = () => abrirLightbox(img);
+  img.src = url;
+  const cap = document.createElement('figcaption');
+  cap.textContent = nombre;
+  fig.appendChild(img);
+  item.appendChild(fig);
+  item.appendChild(cap);
+  return item;
+}
+
+function mostrarCargando(galeria){
+  galeria.innerHTML = '';
+  for (let i = 0; i < 6; i++){
+    const item = document.createElement('div');
+    item.className = 'galeria-item cargando';
+    item.innerHTML = '<figure></figure><figcaption></figcaption>';
+    galeria.appendChild(item);
+  }
+}
+
+async function cargarGaleria(){
+  const galeria = document.getElementById('galeria');
+  const aviso = document.getElementById('galeria-aviso');
+  aviso.hidden = true;
+  mostrarCargando(galeria);
+  try {
+    const [cats, prods] = await Promise.all([
+      supaGet('categorias?select=id,orden'),
+      supaGet('productos?select=id,nombre,imagen_url,orden,categoria_id&descontinuado=eq.false&imagen_url=not.is.null')
+    ]);
+    const ordenCat = {};
+    cats.forEach(c => { ordenCat[c.id] = c.orden ?? 999; });
+    prods.sort((a, b) =>
+      (ordenCat[a.categoria_id] ?? 999) - (ordenCat[b.categoria_id] ?? 999) ||
+      (a.orden ?? 999) - (b.orden ?? 999) ||
+      String(a.id).localeCompare(String(b.id)));
+    // Si dos platillos usan exactamente la misma foto, se muestra solo una vez.
+    const vistas = new Set();
+    const lista = prods.filter(p => {
+      const url = (p.imagen_url || '').trim();
+      if (!url || vistas.has(url)) return false;
+      vistas.add(url);
+      return true;
+    });
+    galeria.innerHTML = '';
+    lista.forEach(p => galeria.appendChild(crearTarjeta(p.nombre, p.imagen_url.trim())));
+    galeriaImgs = Array.from(galeria.querySelectorAll('.galeria-item img'));
+    galeria.querySelectorAll('.galeria-item').forEach(el => observador.observe(el));
+  } catch (e) {
+    console.error('Galería:', e);
+    galeria.innerHTML = '';
+    aviso.hidden = false;
+  }
+}
+
+cargarGaleria();
 </script>
 
 <script src="/promos-banner.js" defer></script>
+<script>
+// Encabezado: se esconde al bajar y regresa al subir. Botón de pedir: aparece al empezar a ver el menú.
+(function(){
+  var cab=document.getElementById('cab'), pedir=document.getElementById('pedir'), ult=window.scrollY;
+  var yaLlamo=false;
+  window.addEventListener('scroll',function(){
+    var y=window.scrollY;
+    if(y>ult+6 && y>120) cab.classList.add('oculta'); else if(y<ult-6 || y<120) cab.classList.remove('oculta');
+    pedir.classList.toggle('oculto', y<240);
+    if(y>=240 && !yaLlamo){ yaLlamo=true; pedir.classList.add('llamar'); }
+    ult=y;
+  },{passive:true});
+})();
+</script>
+<script src="/combos.js" defer></script>
+
+<!-- Aviso de alergias: aparece al abrir el menú (una vez por visita) -->
+<div class="alerg-fondo" id="alerg" role="alertdialog" aria-modal="true" aria-labelledby="alergTit" aria-describedby="alergTxt" hidden>
+  <div class="alerg">
+    <button type="button" class="alerg-x" id="alergX" aria-label="Cerrar aviso">&times;</button>
+    <div class="alerg-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.6c0 4.6 3.2 8.2 7.5 9.4 4.3-1.2 7.5-4.8 7.5-9.4V6L12 3z"/><path d="M12 8v4.6"/><circle cx="12" cy="15.8" r=".9" fill="currentColor"/></svg></div>
+    <h2 id="alergTit" class="letra-cam">¡Aviso importante!</h2>
+    <div class="linea"></div>
+    <p id="alergTxt">Nuestros <b>platillos crudos a base de mariscos</b> pueden provocar reacciones en personas con <b>sensibilidad o alergias alimentarias</b>. El consumo de estos productos es bajo consideración del cliente.</p>
+    <button type="button" class="alerg-ok" id="alergOk">Entendido, ver el menú</button>
+    <p class="alerg-nota">Si tienes dudas sobre algún platillo, pregúntanos antes de ordenar.</p>
+  </div>
+</div>
+<script>
+(function(){
+  var CLAVE='camaroncin_aviso_menu_sesion';
+  try{ if(sessionStorage.getItem(CLAVE)) return; }catch(e){}
+  var f=document.getElementById('alerg');
+  f.hidden=false; document.body.style.overflow='hidden';
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ f.classList.add('ver'); }); });
+  setTimeout(function(){ document.getElementById('alergOk').focus(); }, 350);
+  function cerrar(){
+    try{ sessionStorage.setItem(CLAVE,'1'); }catch(e){}
+    f.classList.remove('ver'); document.body.style.overflow='';
+    setTimeout(function(){ f.hidden=true; }, 300);
+  }
+  document.getElementById('alergOk').addEventListener('click',cerrar);
+  document.getElementById('alergX').addEventListener('click',cerrar);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && !f.hidden) cerrar(); });
+})();
+</script>
 </body>
 </html>

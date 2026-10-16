@@ -262,6 +262,74 @@
     .redes{margin-top:36px;}
     .pie{margin-top:32px; font-size:12.5px;}
   }
+
+  /* ===== Bienvenida estilo B (oct-2026): botón estrella + panel de secciones + pastillas ===== */
+  :root{ --hoja-fondo:linear-gradient(180deg, rgba(32,27,22,.96) 0%, rgba(12,10,9,.985) 100%); }
+  .hoja{background:var(--hoja-fondo);}
+  .hoja-fondo{background:rgba(0,0,0,.62);}
+
+  /* El logo sube y deja más espacio a los botones */
+  body{justify-content:flex-start; padding-top:calc(14px + env(safe-area-inset-top,0px));}
+  img.logo{width:min(36vw,140px); margin-bottom:10px;}
+  .contenido{flex:1; justify-content:center;}
+
+  .estrella{
+    display:flex; align-items:center; gap:14px; width:100%; min-height:86px;
+    padding:16px 18px; border-radius:22px; text-decoration:none; text-align:left; color:#fff;
+    background:linear-gradient(135deg, #FF9843 0%, var(--naranja) 58%, #D96812 100%);
+    box-shadow:0 16px 34px rgba(240,124,29,.42), inset 0 1px 0 rgba(255,255,255,.35);
+    transition:transform .15s ease;
+  }
+  .estrella:active{transform:scale(.98);}
+  .estrella-ico{width:52px;height:52px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    border:1.5px solid rgba(255,255,255,.55); background:rgba(255,255,255,.14);}
+  .estrella-ico svg{width:27px;height:27px;}
+  .estrella-txt{flex:1;min-width:0;}
+  .estrella-tit{display:block;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:20px;line-height:1.05;}
+  .estrella-sub{display:block;font-size:12px;opacity:.92;margin-top:3px;line-height:1.3;}
+  .estrella-fl{font-size:26px;opacity:.85;flex-shrink:0;}
+
+  .panel{
+    width:100%; margin-top:12px; border-radius:22px; overflow:hidden;
+    display:flex; flex-direction:column; gap:1px;           /* el espacio de 1px es la línea divisoria */
+    background:rgba(255,255,255,.10); border:1.5px solid rgba(255,255,255,.14);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  }
+  .panel > div:empty{display:none;}
+  .fila{
+    display:flex; align-items:center; gap:14px; width:100%; min-height:74px;
+    padding:13px 16px; border:0; text-align:left; font:inherit; color:var(--crema); text-decoration:none; cursor:pointer;
+    background:rgba(12,10,9,.74); transition:background .15s ease; -webkit-tap-highlight-color:transparent;
+  }
+  .fila:active{background:rgba(40,33,26,.85);}
+  .fila-ico{
+    width:48px;height:48px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    color:var(--dorado); border:1.2px solid rgba(227,177,85,.55);
+    box-shadow:inset 0 0 0 4px rgba(227,177,85,.07);
+    position:relative;
+  }
+  .fila-ico svg{width:28px;height:28px;}
+  .fila-num{position:absolute;top:-4px;right:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;
+    background:var(--naranja);color:#fff;font:700 11px/19px 'Baloo 2',sans-serif;text-align:center;font-style:normal;}
+  .fila-txt{flex:1;min-width:0;}
+  .fila-tit{display:block;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:17.5px;line-height:1.15;}
+  .fila-sub{display:block;font-size:12px;opacity:.72;margin-top:2px;line-height:1.3;}
+  .fila-fl{font-size:24px;color:var(--dorado);flex-shrink:0;}
+  .fila-dest .fila-ico{background:rgba(227,177,85,.16);}
+
+  .pildoras{display:flex;gap:8px;width:100%;margin-top:12px;}
+  .pildora{
+    flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;
+    padding:12px 4px;border-radius:99px;text-decoration:none;color:var(--crema);
+    font-family:'Baloo 2',sans-serif;font-weight:700;font-size:13.5px;white-space:nowrap;
+    background:rgba(0,0,0,.42);border:1.5px solid rgba(255,255,255,.2);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .15s ease;
+  }
+  .pildora:active{transform:scale(.97);}
+  .pildora svg{width:17px;height:17px;color:var(--dorado);flex-shrink:0;}
+  .social-label{margin-top:16px;}
+  .redes{margin-top:8px;}
+  @media (min-width:700px){ body{justify-content:center;} .contenido{flex:0;} }
 </style>
 </head>
 <body>
@@ -269,68 +337,41 @@
 <div class="contenido">
   <img class="logo" src="logo_trans.png" alt="El Camaroncín ¡Uh Ah Ah! Marisquería" />
 
-  <div id="promosBanner"></div>
+  <!-- Botón estrella -->
+  <a href="/" class="estrella">
+    <span class="estrella-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6"/><path d="M10.5 5h3"/><path d="M12 9v6.2M9.4 12.8 12 15.4l2.6-2.6"/><path d="M10 18.6h4"/></svg></span>
+    <span class="estrella-txt"><span class="estrella-tit">Hacer un pedido</span><span class="estrella-sub">Descarga la app y pide a domicilio</span></span>
+    <span class="estrella-fl" aria-hidden="true">›</span>
+  </a>
 
-  <div class="botones">
-    <a href="/" class="btn btn-principal">
-      <span class="btn-icono">
-        <svg viewBox="0 0 24 24" style="width:26px;height:26px;">
-          <path d="M3 4h2l.35 2M6.35 6h13.4l-1.8 7.2a1.5 1.5 0 0 1-1.46 1.13H8.2a1.5 1.5 0 0 1-1.46-1.14L4.9 4.45" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="9.5" cy="19.5" r="1.3" fill="currentColor"/>
-          <circle cx="16.5" cy="19.5" r="1.3" fill="currentColor"/>
-        </svg>
-      </span>
-      <span class="btn-texto">
-        <span class="btn-titulo">Hacer un pedido</span>
-        <span class="btn-sub">Descarga la app a tu celular</span>
-      </span>
-      <span class="btn-flecha">›</span>
+  <!-- Panel de secciones. Promociones y Combos se llenan solos desde la base de datos;
+       si no hay, su renglón no aparece. -->
+  <div class="panel">
+    <div id="promosBanner" data-formato="fila"></div>
+    <div id="combosBoton" data-formato="fila"></div>
+    <a href="/menu-digital/menu.html" class="fila">
+      <span class="fila-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="2"/><path d="M9.2 7v4.2c0 .9-.7 1.6-1.6 1.6M9.2 7v10M7.6 7v3.6M10.8 7v3.6"/><path d="M15.4 17V7c-1.6.6-2.3 2.2-2.3 4.1 0 1.2.7 1.9 2.3 1.9"/></svg></span>
+      <span class="fila-txt"><span class="fila-tit">Ver el menú</span><span class="fila-sub">Carta completa y PDF</span></span>
+      <span class="fila-fl" aria-hidden="true">›</span>
     </a>
-
-    <a href="/menu-digital/menu.html" class="btn btn-secundario">
-      <span class="btn-icono">
-        <svg viewBox="0 0 24 24" style="width:26px;height:26px;">
-          <path d="M12 5.5c-1.8-1.2-4-1.7-6.3-1.3-.4.1-.7.4-.7.9v12.3c0 .5.4.9.9.8 2-.3 4 .1 5.6 1.1.3.2.7.2 1 0 1.6-1 3.6-1.4 5.6-1.1.5.1.9-.3.9-.8V5.1c0-.5-.3-.8-.7-.9-2.3-.4-4.5.1-6.3 1.3z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
-          <path d="M12 5.5v13.4" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M7.3 8.2c1.3.1 2.6.5 3.6 1.1M7.3 11c1.3.1 2.6.5 3.6 1.1M7.3 13.8c1.3.1 2.3.4 3.2.9" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".8"/>
-        </svg>
-      </span>
-      <span class="btn-texto">
-        <span class="btn-titulo">Ver el menú</span>
-        <span class="btn-sub">Platillos, precios y descarga en PDF</span>
-      </span>
-      <span class="btn-flecha">›</span>
-    </a>
-  </div>
-
-  <div class="acciones">
-    <a href="https://www.google.com/maps/search/?api=1&query=El+Camaroncin&query_place_id=ChIJ8QE-S7310YURYyCZZlJkkV0" target="_blank" rel="noopener" class="accion">
-      <span class="accion-icono">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.1 7-12a7 7 0 0 0-14 0c0 4.9 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>
-      </span>
-      <span class="accion-label">Cómo llegar</span>
-    </a>
-    <a href="https://wa.me/525578986443" target="_blank" rel="noopener" class="accion">
-      <span class="accion-icono">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L4 20l1.05-4.4A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 10.5c.3 2.3 2.7 4.7 5 5" stroke-linecap="round"/></svg>
-      </span>
-      <span class="accion-label">Escríbenos</span>
-    </a>
-    <a href="tel:+525578986443" class="accion">
-      <span class="accion-icono">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 10.8c1.3 2.6 3.4 4.7 6 6l2-2a1 1 0 0 1 1-.25c1.1.36 2.3.56 3.5.56a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1C10.6 20 4 13.4 4 5.4a1 1 0 0 1 1-1h2.9a1 1 0 0 1 1 1c0 1.2.2 2.4.56 3.5a1 1 0 0 1-.25 1l-2 2z"/></svg>
-      </span>
-      <span class="accion-label">Llamar</span>
-    </a>
-    <button type="button" class="accion" onclick="abrirHojaEnvio()" aria-haspopup="dialog">
-      <span class="accion-icono">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>
-      </span>
-      <span class="accion-label">Costo envío</span>
+    <button type="button" class="fila" onclick="abrirHojaEnvio()" aria-haspopup="dialog">
+      <span class="fila-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="17.5" r="2.4"/><circle cx="18" cy="17.5" r="2.4"/><path d="M8.4 17.5h7.2"/><path d="M15.6 17.5 14 11h-3.2"/><path d="M14.8 11h2.6l2.4 4.6"/><path d="M3.5 13.5h4.8l1.6 4"/><path d="M5 8.5h4.5v5"/></svg></span>
+      <span class="fila-txt"><span class="fila-tit">Costo de envío</span><span class="fila-sub">Calcula cuánto cuesta a tu casa</span></span>
+      <span class="fila-fl" aria-hidden="true">›</span>
     </button>
   </div>
 
-  <p class="social-label">Síguenos en redes sociales</p>
+  <!-- Contacto -->
+  <div class="pildoras">
+    <a href="https://www.google.com/maps/search/?api=1&query=El+Camaroncin&query_place_id=ChIJ8QE-S7310YURYyCZZlJkkV0" target="_blank" rel="noopener" class="pildora">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.1 7-12a7 7 0 0 0-14 0c0 4.9 7 12 7 12z"/><circle cx="12" cy="9" r="2.3"/></svg>Cómo llegar</a>
+    <a href="https://wa.me/525578986443" target="_blank" rel="noopener" class="pildora">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.5-4.3a8.5 8.5 0 1 1 15.5-4.6z"/><path d="M9 8.6c-.4.9-.2 2.4 1.3 4.1 1.6 1.7 3.2 2 4.1 1.6l.6-1.3-1.7-.9-.8.8c-.9-.4-1.8-1.3-2.2-2.2l.8-.8-.9-1.7z"/></svg>WhatsApp</a>
+    <a href="tel:+525578986443" class="pildora">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 10.8c1.3 2.6 3.4 4.7 6 6l2-2a1 1 0 0 1 1-.25c1.1.36 2.3.56 3.5.56a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1C10.6 20 4 13.4 4 5.4a1 1 0 0 1 1-1h2.9a1 1 0 0 1 1 1c0 1.2.2 2.4.56 3.5a1 1 0 0 1-.25 1l-2 2z"/></svg>Llamar</a>
+  </div>
+
+  <p class="social-label">Síguenos</p>
   <div class="redes">
     <a href="https://www.facebook.com/share/1Duvo1XRHm/" target="_blank" rel="noopener" class="red-icono" aria-label="Facebook">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.8h2.6l.4-3h-3v-1.9c0-.9.2-1.5 1.5-1.5h1.6V4.1C15.9 4 15 3.9 14 3.9c-2.1 0-3.5 1.3-3.5 3.6v2h-2.6v3h2.6V21h3z"/></svg>
@@ -497,6 +538,7 @@ async function calcularConTexto(e) {
 }
 </script>
 <script src="/promos-banner.js" defer></script>
+<script src="/combos.js" defer></script>
 
 </body>
 </html>

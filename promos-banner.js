@@ -36,6 +36,7 @@
     var css = '' +
       '#promosBanner{width:100%;overflow:hidden;max-height:0;opacity:0;transition:max-height .4s ease,opacity .4s ease,margin .4s ease;}' +
       '#promosBanner.pb-visible{max-height:84px;opacity:1;}' +
+      '#promosBanner.pb-fila{max-height:none;opacity:1;overflow:visible;}' +
       '#promosBanner.pb-listo{overflow:visible;}' +
       '#promosBanner.pb-en-bienvenida.pb-visible{margin-bottom:10px;}' +
       '#promosBanner.pb-en-menu{max-width:640px;margin:0 auto;padding:0 14px;box-sizing:border-box;}' +
@@ -59,7 +60,7 @@
       '#pb-detalle .pb-x{top:max(14px,env(safe-area-inset-top,0px));right:14px;width:40px;height:40px;font-size:24px;}' +
       '.pb-detalle-cont{position:absolute;inset:0;}' +
       '.pb-gal-fondo{position:absolute;inset:0;background:rgba(4,7,18,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}' +
-      '.pb-gal-hoja{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;max-height:90vh;max-height:90dvh;overflow-y:auto;background:linear-gradient(180deg,rgba(24,36,80,.94) 0%,rgba(9,16,40,.97) 100%);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);border:1.5px solid rgba(255,255,255,.2);border-bottom:none;border-radius:26px 26px 0 0;box-shadow:0 -18px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.12);padding:10px 18px calc(20px + env(safe-area-inset-bottom,0px));color:#FBF6EC;}' +
+      '.pb-gal-hoja{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;max-height:90vh;max-height:90dvh;overflow-y:auto;background:var(--hoja-fondo,linear-gradient(180deg,rgba(24,36,80,.94) 0%,rgba(9,16,40,.97) 100%));backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);border:1.5px solid rgba(255,255,255,.2);border-bottom:none;border-radius:26px 26px 0 0;box-shadow:0 -18px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.12);padding:10px 18px calc(20px + env(safe-area-inset-bottom,0px));color:#FBF6EC;}' +
       '.pb-asa{width:42px;height:4px;border-radius:4px;background:rgba(255,255,255,.28);margin:0 auto 14px;}' +
       '.pb-cab{display:flex;align-items:center;gap:12px;margin-bottom:14px;}' +
       '.pb-cab .pb-tile{width:42px;height:42px;border-radius:13px;}' +
@@ -77,11 +78,21 @@
     var n = promos.length;
     var TAG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>';
     var sub = n === 1 ? '1 activa · toca para verla' : n + ' activas · toca para verlas';
+    var formato = host.getAttribute('data-formato');
+    var enFila = formato === 'fila' || formato === 'chip';
+    if (enFila) {
+      // Renglón dentro del panel de la bienvenida (usa los estilos .fila de la página)
+      var ICO = '<svg viewBox="0 0 24 24" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d="M3.5 8.5V6a1.5 1.5 0 0 1 1.5-1.5h14A1.5 1.5 0 0 1 20.5 6v2.5a3.5 3.5 0 0 0 0 7V18a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18v-2.5a3.5 3.5 0 0 0 0-7z"/><path d="M9.5 14.5l5-5"/><circle cx="9.7" cy="9.7" r=".9"/><circle cx="14.3" cy="14.3" r=".9"/></svg>';
+      host.classList.add('pb-fila');
+      if (formato === 'chip') host.innerHTML = '<button type="button" class="atajo" aria-haspopup="dialog"><span class="atajo-ico">' + ICO + '<i class="fila-num">' + n + '</i></span><span class="atajo-txt">Promociones</span><span class="atajo-fl" aria-hidden="true">›</span></button>';
+      else host.innerHTML = '<button type="button" class="fila fila-dest" aria-haspopup="dialog"><span class="fila-ico">' + ICO + '<i class="fila-num">' + n + '</i></span><span class="fila-txt"><span class="fila-tit">Promociones</span><span class="fila-sub">' + (n === 1 ? '1 activa hoy' : n + ' activas hoy') + '</span></span><span class="fila-fl" aria-hidden="true">›</span></button>';
+    } else {
     host.classList.add(document.querySelector('.barra-flotante') ? 'pb-en-menu' : 'pb-en-bienvenida');
     host.innerHTML = '<button type="button" class="pb-banner" aria-haspopup="dialog"><span class="pb-tile">' + TAG + '<i class="pb-num">' + n + '</i></span><span class="pb-texto"><span class="pb-titulo">Promociones</span><span class="pb-sub">' + sub + '</span></span><span class="pb-flecha" aria-hidden="true">›</span></button>';
     document.body.classList.add('pb-activo');
     requestAnimationFrame(function () { requestAnimationFrame(function () { host.classList.add('pb-visible'); }); });
     setTimeout(function () { host.classList.add('pb-listo'); }, 700);
+    }
 
     // ---------- capas (galería y detalle) ----------
     var galeria = document.createElement('div');
@@ -153,7 +164,7 @@
       else cerrarTodo(false);
     }
 
-    host.querySelector('.pb-banner').addEventListener('click', function () { if (promos.length === 1) abrirDetalle(promos[0], false); else abrirGaleria(); });
+    host.querySelector('button').addEventListener('click', function () { if (promos.length === 1) abrirDetalle(promos[0], false); else abrirGaleria(); });
     galeria.querySelector('.pb-x').addEventListener('click', function () { cerrarTodo(false); });
     galeria.querySelector('.pb-gal-fondo').addEventListener('click', function () { cerrarTodo(false); });
     galeria.querySelectorAll('.pb-card').forEach(function (b) { b.addEventListener('click', function () { abrirDetalle(promos[Number(b.dataset.i)], true); }); });
