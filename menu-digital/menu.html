@@ -359,6 +359,21 @@
   .pedir small,.pedir-fl{display:none;}
   .pedir-ico{width:38px;height:38px;}
   @keyframes llamar{0%{box-shadow:0 10px 24px rgba(0,0,0,.45),0 0 0 0 rgba(240,124,29,.7)}100%{box-shadow:0 10px 24px rgba(0,0,0,.45),0 0 0 16px rgba(240,124,29,0)}}
+
+  /* ----- Visor de promociones y de fotos en el azul de la carta ----- */
+  :root{--visor-fondo:rgba(24,48,132,.95);--visor-x-fondo:rgba(255,255,255,.14);--visor-x-color:#FBF6EC;--visor-x-borde:rgba(255,255,255,.3);
+    --visor-tarjeta-borde:rgba(255,255,255,.35);--visor-tarjeta-sombra:0 18px 50px rgba(6,14,44,.55);--visor-mini-fondo:rgba(255,255,255,.08);}
+  #lightbox.abierto{background:rgba(24,48,132,.95);}
+  /* cambio de foto: se desvanece y entra desde el lado */
+  #lightbox-img{transition:opacity .2s ease, transform .28s cubic-bezier(.2,.8,.2,1);}
+  #lightbox-img.sale-izq{opacity:0;transform:translateX(-26px);}
+  #lightbox-img.sale-der{opacity:0;transform:translateX(26px);}
+  #lightbox-caption{transition:opacity .2s ease;}
+  /* ----- Entrada y salida de página ----- */
+  @keyframes aparecePagina{from{opacity:0;}to{opacity:1;}}
+  body{animation:aparecePagina .4s ease both;transition:opacity .23s ease;}
+  body.saliendo{opacity:0;}
+  @media (prefers-reduced-motion:reduce){body{animation:none;transition:none;} #lightbox-img{transition:none;}}
 </style>
 </head>
 <body>
@@ -450,8 +465,21 @@ function mostrarFoto(i){
   document.getElementById('lightbox-img').src = img.src;
   document.getElementById('lightbox-caption').textContent = nombre;
 }
-function fotoAnterior(){ mostrarFoto(indiceActual - 1); }
-function fotoSiguiente(){ mostrarFoto(indiceActual + 1); }
+let cambiandoFoto = false;
+function cambiarFoto(dir){
+  const img = document.getElementById('lightbox-img'), cap = document.getElementById('lightbox-caption');
+  if (cambiandoFoto) return; cambiandoFoto = true;
+  img.classList.add(dir > 0 ? 'sale-izq' : 'sale-der'); cap.style.opacity = '0';
+  setTimeout(() => {
+    mostrarFoto(indiceActual + dir);
+    img.style.transition = 'none'; img.classList.remove('sale-izq','sale-der'); img.classList.add(dir > 0 ? 'sale-der' : 'sale-izq');
+    void img.offsetWidth; img.style.transition = '';
+    img.classList.remove('sale-izq','sale-der'); cap.style.opacity = '1';
+    setTimeout(() => { cambiandoFoto = false; }, 260);
+  }, 190);
+}
+function fotoAnterior(){ cambiarFoto(-1); }
+function fotoSiguiente(){ cambiarFoto(1); }
 function cerrarLightbox(){
   document.getElementById('lightbox').classList.remove('abierto');
   document.body.style.overflow = '';
@@ -610,6 +638,22 @@ cargarGaleria();
   document.getElementById('alergOk').addEventListener('click',cerrar);
   document.getElementById('alergX').addEventListener('click',cerrar);
   document.addEventListener('keydown',function(e){ if(e.key==='Escape' && !f.hidden) cerrar(); });
+})();
+</script>
+<script>
+/* Transición suave al cambiar de página dentro del sitio (bienvenida ↔ menú ↔ app) */
+(function(){
+  window.addEventListener('pageshow',function(){ document.body.classList.remove('saliendo'); });
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a[href]'); if(!a||e.defaultPrevented) return;
+    if(a.target==='_blank'||a.hasAttribute('download')||e.ctrlKey||e.metaKey||e.shiftKey||e.button!==0) return;
+    var u; try{ u=new URL(a.href,location.href); }catch(_){ return; }
+    if(u.origin!==location.origin) return;
+    if(u.pathname===location.pathname && u.hash) return;
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    e.preventDefault(); document.body.classList.add('saliendo');
+    setTimeout(function(){ location.href=a.href; },230);
+  });
 })();
 </script>
 </body>

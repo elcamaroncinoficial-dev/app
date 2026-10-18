@@ -67,11 +67,16 @@
       '.pb-sub{display:block;font-size:11px;opacity:.88;margin-top:1px;line-height:1.3;}' +
       '.pb-flecha{font-size:20px;opacity:.65;flex-shrink:0;line-height:1;}' +
       '@media (max-height:700px){body.pb-activo img.logo{width:min(22vw,88px)!important;margin-bottom:6px!important;}}' +
-      '.pb-capa{position:fixed;inset:0;z-index:2147483000;display:none;text-align:left;font-family:"Inter",-apple-system,system-ui,sans-serif;}' +
-      '.pb-capa.pb-abierta{display:block;}' +
-      '#pb-detalle{background:rgba(5,8,20,.93);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}' +
+      '.pb-capa{position:fixed;inset:0;z-index:2147483000;display:block;visibility:hidden;opacity:0;pointer-events:none;text-align:left;font-family:"Inter",-apple-system,system-ui,sans-serif;transition:opacity .28s ease,visibility 0s linear .34s;}' +
+      '.pb-capa.pb-abierta{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .28s ease;}' +
+      '#pb-galeria .pb-gal-hoja{transform:translateY(105%);transition:transform .36s cubic-bezier(.2,.8,.2,1);}' +
+      '#pb-galeria.pb-abierta .pb-gal-hoja{transform:translateY(0);}' +
+      '#pb-detalle .pb-tarjeta{transform:scale(.9) translateY(14px);opacity:0;transition:transform .38s cubic-bezier(.2,.8,.2,1),opacity .3s ease;}' +
+      '#pb-detalle.pb-abierta .pb-tarjeta{transform:none;opacity:1;}' +
+      '@media (prefers-reduced-motion:reduce){.pb-capa,#pb-galeria .pb-gal-hoja,#pb-detalle .pb-tarjeta{transition:none!important;}}' +
+      '#pb-detalle{background:var(--visor-fondo,rgba(5,8,20,.93));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}' +
       '.pb-x{position:absolute;z-index:3;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.35);border:1.5px solid rgba(255,255,255,.22);color:#FBF6EC;font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-family:inherit;}' +
-      '#pb-detalle .pb-x{top:max(14px,env(safe-area-inset-top,0px));right:14px;width:40px;height:40px;font-size:24px;}' +
+      '#pb-detalle .pb-x{top:max(14px,env(safe-area-inset-top,0px));right:14px;width:40px;height:40px;font-size:24px;background:var(--visor-x-fondo,rgba(0,0,0,.35));color:var(--visor-x-color,#FBF6EC);border-color:var(--visor-x-borde,rgba(255,255,255,.22));}' +
       '.pb-detalle-cont{position:absolute;inset:0;}' +
       '.pb-gal-fondo{position:absolute;inset:0;background:rgba(4,7,18,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}' +
       '.pb-gal-hoja{position:absolute;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;max-height:90vh;max-height:90dvh;overflow-y:auto;background:var(--hoja-fondo,linear-gradient(180deg,rgba(24,36,80,.94) 0%,rgba(9,16,40,.97) 100%));backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);border:1.5px solid rgba(255,255,255,.2);border-bottom:none;border-radius:26px 26px 0 0;box-shadow:0 -18px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.12);padding:10px 18px calc(20px + env(safe-area-inset-bottom,0px));color:#FBF6EC;}' +
@@ -120,7 +125,7 @@
     document.body.appendChild(galeria); document.body.appendChild(detalle);
 
     galeria.querySelector('.pb-grid').innerHTML = promos.map(function (p, i) {
-      return '<button type="button" class="pb-card" data-i="' + i + '"><img src="' + esc(p.imagen_url) + '" loading="lazy" alt="Promoción ' + (i + 1) + '" style="display:block;width:100%;max-width:none;height:auto;aspect-ratio:4/5;object-fit:contain;background:#000;">' +
+      return '<button type="button" class="pb-card" data-i="' + i + '"><img src="' + esc(p.imagen_url) + '" loading="lazy" alt="Promoción ' + (i + 1) + '" style="display:block;width:100%;max-width:none;height:auto;aspect-ratio:4/5;object-fit:contain;background:var(--visor-mini-fondo,#000);">' +
         (p.descripcion ? '<p>' + esc(p.descripcion) + '</p>' : '') + '</button>';
     }).join('');
 
@@ -136,7 +141,7 @@
       // Marco de protección: la imagen siempre cabe completa en la pantalla (igual que en la app de pedidos)
       cont.innerHTML =
         '<div style="width:100%;height:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 62px) 16px calc(env(safe-area-inset-bottom,0px) + 16px);">' +
-          '<div style="display:flex;flex-direction:column;width:min(100%,520px);max-height:100%;border-radius:24px;overflow:hidden;background:#000;border:1.5px solid rgba(255,255,255,.3);box-shadow:0 18px 50px rgba(0,0,0,.55);">' +
+          '<div class="pb-tarjeta" style="display:flex;flex-direction:column;width:min(100%,520px);max-height:100%;border-radius:24px;overflow:hidden;background:#000;border:1.5px solid var(--visor-tarjeta-borde,rgba(255,255,255,.3));box-shadow:var(--visor-tarjeta-sombra,0 18px 50px rgba(0,0,0,.55));">' +
             (pos === 'arriba' ? banda : '') +
             '<div style="position:relative;flex:0 1 auto;min-height:0;display:flex;overflow:hidden;background:#000;">' +
               '<img src="' + src + '" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;max-width:none;height:100%;object-fit:cover;filter:blur(22px) brightness(.55);transform:scale(1.15);">' +
@@ -170,6 +175,7 @@
       if (!hayCapa()) { foco = document.activeElement; overflowPrevio = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
       vieneDeGaleria = !!desdeGaleria;
       renderDetalle(p);
+      void detalle.offsetWidth;   // la tarjeta nueva arranca en su estado inicial, para que se vea crecer
       galeria.classList.remove('pb-abierta'); detalle.classList.add('pb-abierta'); empujar();
       var x = detalle.querySelector('.pb-x'); if (x) x.focus();
     }

@@ -496,6 +496,22 @@ body .pb-gal-hoja .pb-cab h2{color:var(--marino);}
 body .pb-gal-hoja .pb-cab p{color:#5A6690;opacity:1;}
 body .pb-gal-hoja .pb-x{background:#F1F4FC;color:var(--marino);border-color:rgba(26,42,122,.15);}
 body .pb-gal-hoja .pb-card{background:#fff;color:var(--marino);border-color:rgba(26,42,122,.12);box-shadow:0 8px 18px rgba(26,42,122,.10);}
+
+/* ----- Visor de promociones en blanco ----- */
+:root{--visor-fondo:rgba(255,255,255,.95);--visor-x-fondo:#F1F4FC;--visor-x-color:#1A2A7A;--visor-x-borde:rgba(26,42,122,.15);
+  --visor-tarjeta-borde:rgba(26,42,122,.12);--visor-tarjeta-sombra:0 18px 44px rgba(26,42,122,.22);--visor-mini-fondo:#F1F4FC;}
+/* ----- Entrada escalonada y salida suave ----- */
+body{transition:opacity .23s ease;}
+body.saliendo{opacity:0;}
+@keyframes sube{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+@keyframes entraLogo{from{opacity:0;transform:scale(.92);}to{opacity:1;transform:none;}}
+.contenido > img.logo{animation:entraLogo .55s cubic-bezier(.2,.8,.2,1) both;}
+.contenido > .estrella{animation:sube .5s cubic-bezier(.2,.8,.2,1) .08s both;}
+.contenido > .panel{animation:sube .5s cubic-bezier(.2,.8,.2,1) .16s both;}
+.contenido > .pildoras{animation:sube .5s cubic-bezier(.2,.8,.2,1) .24s both;}
+.contenido > .redes{animation:sube .5s cubic-bezier(.2,.8,.2,1) .3s both;}
+.contenido > .pie{animation:sube .5s cubic-bezier(.2,.8,.2,1) .36s both;}
+@media (prefers-reduced-motion:reduce){.contenido > *{animation:none!important;} body{transition:none;}}
 </style>
 </head>
 <body>
@@ -743,6 +759,22 @@ document.addEventListener('pointerdown',function(e){
   o.style.left=(e.clientX-r.left-d/2)+'px'; o.style.top=(e.clientY-r.top-d/2)+'px';
   b.appendChild(o); setTimeout(function(){o.remove();},650);
 },{passive:true});
+</script>
+<script>
+/* Transición suave al cambiar de página dentro del sitio (bienvenida ↔ menú ↔ app) */
+(function(){
+  window.addEventListener('pageshow',function(){ document.body.classList.remove('saliendo'); });
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('a[href]'); if(!a||e.defaultPrevented) return;
+    if(a.target==='_blank'||a.hasAttribute('download')||e.ctrlKey||e.metaKey||e.shiftKey||e.button!==0) return;
+    var u; try{ u=new URL(a.href,location.href); }catch(_){ return; }
+    if(u.origin!==location.origin) return;
+    if(u.pathname===location.pathname && u.hash) return;
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    e.preventDefault(); document.body.classList.add('saliendo');
+    setTimeout(function(){ location.href=a.href; },230);
+  });
+})();
 </script>
 </body>
 </html>
